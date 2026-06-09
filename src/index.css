@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-sans: "Jost", "Inter", sans-serif;
+  
+  --color-primary-black: #0B0B0B;
+  --color-soft-black: #161616;
+  --color-charcoal: #222222;
+  --color-off-white: #FAF8F4;
+  --color-warm-white: #FFFFFF;
+  --color-light-grey: #E8E3DC;
+  --color-medium-grey: #9A948C;
+  --color-muted-border: #D8D2C8;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #FAF8F4;
+  color: #0B0B0B;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background-color: #0B0B0B;
+  color: #FAF8F4;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #9A948C;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #161616;
+}
+
+/* Subtle editorial underline motif */
+.editorial-dot-divider {
+  background-image: radial-gradient(#9A948C 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.aspect-editorial {
+  aspect-ratio: 4 / 5;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+.tracking-widest-plus {
+  letter-spacing: 0.25em;
+}
+
+.border-muted {
+  border-color: #D8D2C8;
+}
+
+.dot-divider {
+  border-bottom: 1px dotted #0B0B0B;
+  flex-grow: 1;
+  margin: 0 8px 4px 8px;
+}
+

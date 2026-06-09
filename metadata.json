@@ -1,0 +1,6 @@
+{
+  "name": "Cake Fruition",
+  "description": "Premium custom cake & dessert studio. Handcrafted bespoke cakes for birthdays, weddings, baby showers & celebrations. Live interactive AI Cake Planner inside.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
