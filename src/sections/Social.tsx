@@ -6,7 +6,9 @@ import { FacebookIcon, InstagramIcon } from "../components/Icons";
 import { GALLERY } from "../lib/content";
 import { SITE } from "../lib/site";
 
-const FEED = [GALLERY[1], GALLERY[4], GALLERY[6], GALLERY[9]];
+const FEED = ["Monochrome Fourteen", "Plum, Gold & Sage", "Sage Garden Fifteen", "Cobalt Seventeen"].map(
+  (title) => GALLERY.find((g) => g.title === title)!,
+);
 
 export default function Social() {
   return (

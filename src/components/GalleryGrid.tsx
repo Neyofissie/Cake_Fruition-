@@ -11,6 +11,8 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const visible = filter === "All" ? items : items.filter((item) => item.category === filter);
+  // Large tiles only in the full view, where the counts are planned to fill whole rows.
+  const isLarge = (item: GalleryItem) => filter === "All" && item.featured;
 
   return (
     <>
@@ -35,7 +37,7 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
         </LayoutGroup>
       </div>
 
-      <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+      <ul className="mt-10 grid grid-flow-dense grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         <AnimatePresence initial={false}>
           {visible.map((item, i) => (
             <motion.li
@@ -44,24 +46,24 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.15 } }}
               transition={{ duration: 0.6, ease: EASE, delay: (i % 4) * 0.05 }}
-              
+              className={isLarge(item) ? "col-span-2 row-span-2 aspect-[4/5]" : undefined}
             >
               <button
                 type="button"
                 onClick={() => setOpenIndex(i)}
                 aria-label={`View larger: ${item.title}`}
-                className="group relative block w-full overflow-hidden rounded-[2px] bg-light-grey text-left"
+                className="group relative block h-full w-full overflow-hidden rounded-[2px] bg-light-grey text-left"
               >
                 <img
                   src={item.image.src}
                   srcSet={item.image.srcSet}
-                  sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 48vw"
+                  sizes={isLarge(item) ? "(min-width: 1024px) 46vw, 96vw" : "(min-width: 1024px) 23vw, 48vw"}
                   alt={item.alt}
                   loading="lazy"
                   decoding="async"
                   width={640}
                   height={800}
-                  className="aspect-[4/5] w-full object-cover object-[50%_40%] transition-transform duration-[1.2s] ease-luxe group-hover:scale-[1.06]"
+                  className={`${isLarge(item) ? "absolute inset-0 h-full" : "aspect-[4/5]"} w-full object-cover object-[50%_40%] transition-transform duration-[1.2s] ease-luxe group-hover:scale-[1.06]`}
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/0 to-transparent opacity-80 transition-opacity duration-500 sm:opacity-0 sm:group-hover:opacity-100" />
                 <span className="absolute inset-x-0 bottom-0 p-3 text-off-white sm:translate-y-2 sm:p-5 sm:opacity-0 sm:transition-all sm:duration-500 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">

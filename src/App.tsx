@@ -4,6 +4,7 @@ import Hero from "./components/Hero";
 import Footer from "./components/Footer";
 import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
+import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
 import Occasions from "./sections/Occasions";
 import Gallery from "./sections/Gallery";
@@ -25,6 +26,7 @@ export default function App() {
       <main id="main">
         <Hero />
         <About />
+        <MeetTheArchitect />
         <Menu />
         <Occasions />
         <Gallery />
