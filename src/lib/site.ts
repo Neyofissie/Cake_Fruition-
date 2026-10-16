@@ -17,9 +17,9 @@ export const DEFAULT_ENQUIRY = "Hi Cake Fruition! I'd love to enquire about a cu
 
 export const NAV_LINKS = [
   { label: "Home", href: "#home" },
+  { label: "Gallery", href: "#gallery" },
   { label: "About", href: "#about" },
   { label: "Menu", href: "#menu" },
-  { label: "Gallery", href: "#gallery" },
   { label: "Order", href: "#order" },
   { label: "Contact", href: "#contact" },
 ];

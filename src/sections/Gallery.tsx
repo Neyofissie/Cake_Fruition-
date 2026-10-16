@@ -7,7 +7,7 @@ import { SITE } from "../lib/site";
 
 export default function Gallery() {
   return (
-    <section id="gallery" aria-labelledby="gallery-title" className="bg-off-white py-24 sm:py-32">
+    <section id="gallery" aria-labelledby="gallery-title" className="border-t border-muted-border bg-off-white py-24 sm:py-32">
       <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
         <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <Reveal className="max-w-2xl">

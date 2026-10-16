@@ -25,11 +25,11 @@ export default function App() {
       <Header />
       <main id="main">
         <Hero />
+        <Gallery />
         <About />
         <MeetTheArchitect />
         <Menu />
         <Occasions />
-        <Gallery />
         <OrderProcess />
         <WhyChoose />
         <QuoteCTA />
