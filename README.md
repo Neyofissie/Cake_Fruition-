@@ -1,20 +1,56 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Cake Fruition
 
-# Run and deploy your AI Studio app
+Website for **Cake Fruition**, a custom cake studio. The site is black and white, designed to feel premium and editorial, and built to send visitors to order through WhatsApp.
 
-This contains everything you need to run your app locally.
+_Creating Sweet Moments, One Cake at a Time._
 
-View your app in AI Studio: https://ai.studio/apps/b5f699fb-b87d-49cc-8149-38bd91163d62
+## Stack
 
-## Run Locally
+- React 19 + TypeScript, bundled with Vite
+- Tailwind CSS v4 (design tokens in `src/index.css`)
+- Motion (Framer Motion) for animations, honouring `prefers-reduced-motion`
+- A small Express (Node.js) server that serves the production build
 
-**Prerequisites:**  Node.js
+## Run locally
 
+Prerequisite: Node.js 20+
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+## Build and deploy
+
+```bash
+npm run build      # outputs dist/ (static site) + dist/server.cjs
+npm start          # serves dist/ on $PORT (default 3000)
+```
+
+`dist/` minus `server.cjs` is a plain static site, so you can also deploy it to any static host (Netlify, Vercel, Cloudflare Pages, S3).
+
+## Project layout
+
+```
+src/
+  App.tsx              page composition
+  index.css            colour, type and utility tokens
+  lib/site.ts          brand name, WhatsApp number, social links, nav
+  lib/content.ts       menu, occasions, gallery, order steps, features
+  lib/images.ts        responsive image helper
+  components/          Header, Hero, CTAButton, SectionLabel, CakeMenuCard,
+                       FlavourList, ServiceCard, GalleryGrid (with lightbox),
+                       ProcessStep, FeatureCard, SocialLinkButton, Footer,
+                       MobileOrderBar, Motifs, Icons, Logo, Reveal
+  sections/            About, Menu, Occasions, Gallery, OrderProcess,
+                       WhyChoose, QuoteCTA, Social
+  assets/cakes/        cake photos as WebP, 640px and 1200px wide
+public/                favicon, Open Graph image, robots.txt
+```
+
+## Editing content
+
+- **Phone number and social links:** `src/lib/site.ts`
+- **Flavours, occasions, steps and features:** `src/lib/content.ts`
+- **Adding a gallery photo:** export `name-640.webp` and `name-1200.webp` into `src/assets/cakes/`, then add an entry to `GALLERY` in `src/lib/content.ts` using `cake("name")` and descriptive alt text.
+- **SEO tags and schema:** `index.html`. Once the site has a domain, make the `og:image` URL absolute (for example `https://yourdomain.com/og-image.jpg`) and add a `<link rel="canonical">`.

@@ -1,159 +1,222 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, ArrowUpRight, MessageSquare, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import Logo from "./Logo";
+import CTAButton from "./CTAButton";
+import { EASE } from "./Reveal";
+import { FacebookIcon, InstagramIcon } from "./Icons";
+import { DEFAULT_ENQUIRY, NAV_LINKS, SITE, whatsappLink } from "../lib/site";
+
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) setActive(entry.target.id);
+      },
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
+
+const SECTION_IDS = NAV_LINKS.map((l) => l.href.slice(1));
+const LEFT = NAV_LINKS.slice(0, 3);
+const RIGHT = NAV_LINKS.slice(3);
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+  const active = useActiveSection(SECTION_IDS);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About", href: "#about" },
-    { name: "Menu", href: "#menu" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "Process", href: "#order" },
-    { name: "AI Planner", href: "#ai-planner" }
-  ];
+  // Lock scroll, close on Escape, and keep focus inside the drawer while it is open.
+  useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.querySelector<HTMLElement>("a")?.focus();
 
-  const handleNavClick = (href: string) => {
-    setMobileMenuOpen(false);
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+      if (e.key !== "Tab" || !drawerRef.current) return;
+      const focusable = [toggleRef.current, ...drawerRef.current.querySelectorAll<HTMLElement>("a")].filter(
+        Boolean,
+      ) as HTMLElement[];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+      toggleRef.current?.focus();
+    };
+  }, [open]);
+
+  const linkClass = (href: string) =>
+    `eyebrow relative py-2 transition-colors hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-px after:bg-ink after:transition-all after:duration-500 after:ease-luxe ${
+      active === href.slice(1) ? "text-ink after:w-full" : "text-stone after:w-0 hover:after:w-full"
+    }`;
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-40 transition-all duration-500 border-b ${
-          scrolled
-            ? "bg-off-white/95 backdrop-blur-md py-4 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border-muted-border/50"
-            : "bg-transparent py-6 border-transparent"
+        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ${
+          scrolled || open
+            ? "border-b border-muted-border/70 bg-off-white/90 backdrop-blur-md"
+            : "border-b border-transparent bg-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          
-          {/* Logo / Brand Wordmark */}
-          <a 
-            href="#home"
-            className="flex select-none group"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavClick("#home");
-            }}
-          >
-            <Logo variant="horizontal" theme="light" size="md" />
-          </a>
-
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(link.href);
-                }}
-                className="font-sans text-[11px] tracking-[0.2em] uppercase text-charcoal hover:text-primary-black relative group py-2"
-              >
-                {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-primary-black transition-all duration-300 group-hover:w-full"></span>
-              </a>
-            ))}
+        <div className="mx-auto grid h-[4.75rem] max-w-[90rem] grid-cols-[1fr_auto_1fr] items-center px-4 sm:h-[5.25rem] sm:px-8 lg:px-12">
+          <nav aria-label="Primary" className="hidden xl:block">
+            <ul className="flex items-center gap-9">
+              {LEFT.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} className={linkClass(link.href)}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </nav>
 
-          {/* Call-to-action layout right */}
-          <div className="hidden lg:flex items-center gap-4">
-            <a
-              href="https://wa.me/447847996397"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-primary-black bg-primary-black px-6 py-2.5 text-[10px] tracking-widest uppercase text-white hover:bg-transparent hover:text-primary-black transition-all duration-300 font-sans font-medium"
-            >
-              Order Now
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </a>
-          </div>
-
-          {/* Hamburger Mobile button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-primary-black aria-label='Toggle Menu'"
-            aria-label="Open Navigation List"
+          <a
+            href="#home"
+            aria-label="Cake Fruition — back to top"
+            className="col-start-1 justify-self-start xl:col-start-2 xl:justify-self-center"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+            <Logo />
+          </a>
 
+          <div className="col-start-3 flex items-center justify-end gap-9">
+            <nav aria-label="Secondary" className="hidden xl:block">
+              <ul className="flex items-center gap-9">
+                {RIGHT.map((link) => (
+                  <li key={link.href}>
+                    <a href={link.href} className={linkClass(link.href)}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <span className="hidden sm:block">
+              <CTAButton href={whatsappLink(DEFAULT_ENQUIRY)} icon="none" className="!min-h-11 !px-6">
+                Order Now
+              </CTAButton>
+            </span>
+
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? "Close menu" : "Open menu"}
+              className="relative -mr-2 flex h-12 w-12 items-center justify-center xl:hidden"
+            >
+              <span className="sr-only">Menu</span>
+              <span
+                aria-hidden
+                className={`absolute h-px w-7 bg-ink transition-transform duration-500 ease-luxe ${open ? "rotate-45" : "-translate-y-[5px]"}`}
+              />
+              <span
+                aria-hidden
+                className={`absolute h-px w-7 bg-ink transition-transform duration-500 ease-luxe ${open ? "-rotate-45" : "translate-y-[5px]"}`}
+              />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Mobile drawer backdrop */}
+      {/* Rendered outside <header>: its backdrop-filter would otherwise trap this fixed drawer. */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {open && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-primary-black/40 backdrop-blur-sm z-30 lg:hidden"
-            onClick={() => setMobileMenuOpen(false)}
+            id="mobile-menu"
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site menu"
+            initial={{ clipPath: "inset(0 0 100% 0)" }}
+            animate={{ clipPath: "inset(0 0 0% 0)" }}
+            exit={{ clipPath: "inset(0 0 100% 0)" }}
+            transition={{ duration: 0.6, ease: EASE }}
+            className="fixed inset-x-0 bottom-0 top-[4.75rem] z-40 overflow-y-auto bg-off-white sm:top-[5.25rem] xl:hidden"
           >
-            {/* Drawer panel */}
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute top-0 right-0 h-full w-4/5 max-w-[340px] bg-[#FAF8F4] border-l border-muted-border p-6 flex flex-col justify-between"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="space-y-8 pt-10">
-                <Logo variant="vertical" theme="light" size="lg" className="!items-start !text-left" />
-
-                <nav className="flex flex-col gap-5">
-                  {navLinks.map((link) => (
+            <nav aria-label="Mobile" className="flex min-h-full flex-col px-6 pb-10 pt-6 sm:px-10">
+              <ul className="border-t border-muted-border">
+                {NAV_LINKS.map((link, i) => (
+                  <motion.li
+                    key={link.href}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 + i * 0.05, duration: 0.6, ease: EASE }}
+                    className="border-b border-muted-border"
+                  >
                     <a
-                      key={link.name}
                       href={link.href}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNavClick(link.href);
-                      }}
-                      className="font-sans text-xs tracking-[0.25em] uppercase text-charcoal hover:text-primary-black py-2.5 border-b border-muted-border/30 flex items-center justify-between"
+                      onClick={() => setOpen(false)}
+                      className="flex items-baseline justify-between py-4 font-serif text-[2.1rem] leading-none text-ink"
                     >
-                      {link.name}
-                      {link.name === "AI Planner" && <Sparkles className="w-3.5 h-3.5 text-medium-grey" />}
+                      {link.label}
+                      <span className="eyebrow text-stone">0{i + 1}</span>
                     </a>
-                  ))}
-                </nav>
-              </div>
+                  </motion.li>
+                ))}
+              </ul>
 
-              <div className="space-y-4">
-                <a
-                  href="https://wa.me/447847996397"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-primary-black text-white px-5 py-3 text-xs tracking-widest uppercase font-medium border border-primary-black"
+              <div className="mt-auto pt-10">
+                <p className="font-script text-3xl text-stone">Let&rsquo;s bake your moment</p>
+                <CTAButton
+                  href={whatsappLink(DEFAULT_ENQUIRY)}
+                  icon="whatsapp"
+                  className="mt-5 w-full"
+                  onClick={() => setOpen(false)}
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  Chat on WhatsApp
-                </a>
-                <p className="font-sans text-[9px] text-center text-medium-grey leading-relaxed">
-                  Creating Sweet Moments, One Cake at a Time.
-                </p>
+                  Order on WhatsApp
+                </CTAButton>
+                <div className="mt-6 flex items-center justify-center gap-3">
+                  <a
+                    href={SITE.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Cake Fruition on Instagram"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-muted-border"
+                  >
+                    <InstagramIcon />
+                  </a>
+                  <a
+                    href={SITE.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Cake Fruition on Facebook"
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-muted-border"
+                  >
+                    <FacebookIcon />
+                  </a>
+                </div>
               </div>
-            </motion.div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
