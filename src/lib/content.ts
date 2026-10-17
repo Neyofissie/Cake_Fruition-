@@ -83,7 +83,7 @@ export const GALLERY: GalleryItem[] = [
   {
     title: "Blush Cascade Fiftieth",
     category: "Celebration",
-    alt: "Tall two-tier blush pink 50th birthday cake with sculpted fondant waves, a cascade of pink, burgundy and gold sugar roses, and a gold monogram topper",
+    alt: "Tall two-tier blush pink 50th birthday cake with sculpted fondant waves, a cascade of pink, burgundy and gold sugar roses and a gold monogram topper, styled on a marble table with baby's breath and gold accents",
     image: cake("blush-cascade-fifty"),
     featured: true,
   },
@@ -128,7 +128,7 @@ export const GALLERY: GalleryItem[] = [
   {
     title: "Noir & Gold Fiftieth",
     category: "Celebration",
-    alt: "Tall black two-tier 50th birthday cake with gold lettering, a gold crest monogram, black fondant fans with gold damask, and a gold sports-themed topper",
+    alt: "Tall black two-tier 50th birthday cake with gold lettering, a gold crest monogram, black fondant fans with gold damask and a gold sports-themed topper, styled on a marble table with baby's breath and gold accents",
     image: cake("noir-gold-fifty"),
     featured: true,
   },
