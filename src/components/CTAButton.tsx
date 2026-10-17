@@ -1,75 +1,53 @@
+import type { ReactNode } from "react";
 import { motion } from "motion/react";
-import { LucideIcon } from "lucide-react";
+import { ArrowIcon, WhatsAppIcon } from "./Icons";
 
-interface CTAButtonProps {
-  id?: string;
-  label: string;
-  href?: string;
-  onClick?: () => void;
-  variant?: "primary" | "secondary" | "outline" | "white";
-  icon?: LucideIcon;
+type Variant = "solid" | "light" | "outline" | "outline-light";
+
+const VARIANTS: Record<Variant, string> = {
+  solid: "bg-ink text-off-white hover:bg-charcoal shadow-[0_10px_30px_-12px_rgba(11,11,11,0.55)]",
+  light: "bg-off-white text-ink hover:bg-warm-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)]",
+  outline: "border border-ink/80 text-ink hover:bg-ink hover:text-off-white",
+  "outline-light": "border border-off-white/50 text-off-white hover:bg-off-white hover:text-ink",
+};
+
+type Props = {
+  href: string;
+  children: ReactNode;
+  variant?: Variant;
+  icon?: "whatsapp" | "arrow" | "none";
   className?: string;
-  disabled?: boolean;
-}
+  ariaLabel?: string;
+  onClick?: () => void;
+};
 
 export default function CTAButton({
-  id,
-  label,
   href,
-  onClick,
-  variant = "primary",
-  icon: Icon,
+  children,
+  variant = "solid",
+  icon = "arrow",
   className = "",
-  disabled = false
-}: CTAButtonProps) {
-  const baseStyle = "inline-flex items-center justify-center gap-2.5 px-7 py-3.5 text-xs font-sans tracking-[0.2em] uppercase transition-all duration-300 rounded-none focus:outline-none focus:ring-1 focus:ring-medium-grey active:scale-98 relative group overflow-hidden select-none border";
-  
-  const variants = {
-    primary: "bg-primary-black text-white border-primary-black hover:bg-transparent hover:text-primary-black",
-    secondary: "bg-soft-black text-white border-soft-black hover:bg-primary-black",
-    outline: "bg-transparent text-primary-black border-muted-border hover:border-primary-black hover:bg-primary-black hover:text-white",
-    white: "bg-white text-primary-black border-white hover:bg-transparent hover:text-white",
-  };
-
-  const buttonContent = (
-    <>
-      {/* Background slide animation background overlay */}
-      <span className="absolute inset-0 w-full h-full bg-primary-black/5 scale-x-0 origin-left transition-transform duration-500 ease-out group-hover:scale-x-100 dark:bg-white/5"></span>
-      <span className="relative z-10 flex items-center gap-2">
-        {label}
-        {Icon && <Icon className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5" />}
-      </span>
-    </>
-  );
-
-  if (href) {
-    return (
-      <motion.a
-        id={id}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        whileHover={{ y: -2 }}
-        whileTap={{ scale: 0.98 }}
-        className={`${baseStyle} ${variants[variant]} ${className}`}
-        aria-label={label}
-      >
-        {buttonContent}
-      </motion.a>
-    );
-  }
+  ariaLabel,
+  onClick,
+}: Props) {
+  const external = /^https?:/.test(href);
 
   return (
-    <motion.button
-      id={id}
+    <motion.a
+      href={href}
       onClick={onClick}
-      disabled={disabled}
-      whileHover={{ y: disabled ? 0 : -2 }}
-      whileTap={{ scale: disabled ? 1 : 0.98 }}
-      className={`${baseStyle} ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-      aria-label={label}
+      aria-label={ariaLabel}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      className={`group inline-flex min-h-12 items-center justify-center gap-3 rounded-full px-7 py-3 text-[0.72rem] font-medium uppercase tracking-[0.22em] transition-colors duration-300 ${VARIANTS[variant]} ${className}`}
     >
-      {buttonContent}
-    </motion.button>
+      {icon === "whatsapp" && <WhatsAppIcon size={17} className="shrink-0" />}
+      <span>{children}</span>
+      {icon === "arrow" && (
+        <ArrowIcon size={17} className="shrink-0 transition-transform duration-300 ease-luxe group-hover:translate-x-1" />
+      )}
+    </motion.a>
   );
 }

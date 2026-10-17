@@ -1,72 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Jost", "Inter", sans-serif;
-  
-  --color-primary-black: #0B0B0B;
+  --font-sans: "Jost", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-script: "Pinyon Script", "Cormorant Garamond", cursive;
+
+  --color-ink: #0b0b0b;
   --color-soft-black: #161616;
   --color-charcoal: #222222;
-  --color-off-white: #FAF8F4;
-  --color-warm-white: #FFFFFF;
-  --color-light-grey: #E8E3DC;
-  --color-medium-grey: #9A948C;
-  --color-muted-border: #D8D2C8;
+  --color-off-white: #faf8f4;
+  --color-warm-white: #ffffff;
+  --color-light-grey: #e8e3dc;
+  --color-medium-grey: #9a948c;
+  --color-muted-border: #d8d2c8;
+
+  /* Darker than medium-grey so small text on off-white stays above 4.5:1 */
+  --color-stone: #6b655d;
+
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-html {
-  scroll-behavior: smooth;
-  background-color: #FAF8F4;
-  color: #0B0B0B;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-off-white);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-off-white);
+  }
+
+  :focus-visible {
+    outline: 1.5px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility eyebrow {
   font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
 }
 
-::selection {
-  background-color: #0B0B0B;
-  color: #FAF8F4;
-}
-
-/* Custom premium scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #FAF8F4;
-}
-::-webkit-scrollbar-thumb {
-  background: #9A948C;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #161616;
-}
-
-/* Subtle editorial underline motif */
-.editorial-dot-divider {
-  background-image: radial-gradient(#9A948C 1px, transparent 1px);
-  background-size: 8px 8px;
-}
-
-.aspect-editorial {
-  aspect-ratio: 4 / 5;
-}
-
-.serif {
+@utility display {
   font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
 }
 
-.tracking-widest-plus {
-  letter-spacing: 0.25em;
+/* Dotted leader between a menu item and its note, like a printed menu */
+@utility leader {
+  flex: 1 1 auto;
+  min-width: 1.5rem;
+  margin: 0 0.75rem 0.35em;
+  border-bottom: 1px dotted currentColor;
+  opacity: 0.45;
 }
 
-.border-muted {
-  border-color: #D8D2C8;
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
-
-.dot-divider {
-  border-bottom: 1px dotted #0B0B0B;
-  flex-grow: 1;
-  margin: 0 8px 4px 8px;
-}
-
