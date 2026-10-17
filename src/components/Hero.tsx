@@ -39,7 +39,7 @@ export default function Hero() {
       id="home"
       ref={ref}
       aria-labelledby="hero-title"
-      className="relative overflow-hidden bg-off-white pb-16 pt-28 sm:pt-32 lg:min-h-[100svh] lg:pb-20 lg:pt-36"
+      className="relative overflow-hidden bg-off-white pb-16 pt-24 sm:pt-32 lg:min-h-[100svh] lg:pb-20 lg:pt-36"
     >
       {/* Oversized background wordmark, as in an editorial cover */}
       <motion.p
@@ -53,29 +53,30 @@ export default function Hero() {
         Fruition
       </motion.p>
 
-      <div className="relative mx-auto grid max-w-[90rem] items-center gap-14 px-5 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:px-12">
-        <motion.div variants={stagger(0.12, 0.15)} initial="hidden" animate="show" className="lg:col-span-6 xl:col-span-5">
-          <motion.p variants={fadeUp} className="eyebrow flex items-center gap-4 text-stone">
+      <div className="relative mx-auto grid max-w-[90rem] items-center gap-10 px-5 sm:gap-14 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:px-12">
+        <motion.div variants={stagger(0.12, 0.15)} initial="hidden" animate="show" className="order-2 text-center lg:order-none lg:col-span-6 lg:text-left xl:col-span-5">
+          <motion.p variants={fadeUp} className="eyebrow flex items-center justify-center gap-4 text-stone lg:justify-start">
             <span aria-hidden className="h-px w-10 bg-ink/30" />
             Bespoke Cake Studio
+            <span aria-hidden className="h-px w-10 bg-ink/30 lg:hidden" />
           </motion.p>
 
           <motion.h1
             id="hero-title"
             variants={fadeUp}
-            className="display mt-7 text-[3.3rem] text-ink sm:text-[4.6rem] lg:text-[5.1rem] xl:text-[5.6rem]"
+            className="display mt-6 text-[3.3rem] text-ink sm:text-[4.6rem] lg:text-[5.1rem] xl:text-[5.6rem]"
           >
             Custom Cakes
             <span className="block italic text-charcoal">for Beautiful</span>
             Celebrations
           </motion.h1>
 
-          <motion.p variants={fadeUp} className="mt-7 max-w-md text-[1.02rem] leading-relaxed text-charcoal/85">
+          <motion.p variants={fadeUp} className="mx-auto mt-7 max-w-md text-[1.02rem] lg:mx-0 leading-relaxed text-charcoal/85">
             Freshly baked, beautifully designed cakes made to order for birthdays, weddings, events, and life&rsquo;s
             sweetest moments.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <motion.div variants={fadeUp} className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 lg:justify-start">
             <CTAButton href={whatsappLink(DEFAULT_ENQUIRY)} icon="whatsapp">
               Order on WhatsApp
             </CTAButton>
@@ -93,7 +94,7 @@ export default function Hero() {
           </motion.ul>
         </motion.div>
 
-        <div className="relative mx-auto w-full max-w-[26rem] sm:max-w-[30rem] lg:col-span-6 lg:max-w-none xl:col-span-6 xl:col-start-7">
+        <div className="relative order-1 mx-auto w-full max-w-[26rem] sm:max-w-[30rem] lg:order-none lg:col-span-6 lg:max-w-none xl:col-span-6 xl:col-start-7">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
