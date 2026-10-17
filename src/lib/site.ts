@@ -1,7 +1,7 @@
 export const SITE = {
   name: "Cake Fruition",
   tagline: "Creating Sweet Moments, One Cake at a Time",
-  whatsappNumber: "447847996397",
+  whatsappNumber: "447503062391",
   instagram: "https://www.instagram.com/cakefruition/",
   facebook: "https://www.facebook.com/profile.php?id=61573849115966",
 };
