@@ -7,7 +7,7 @@ import { HERO_SLIDES } from "../lib/content";
 import { DEFAULT_ENQUIRY, whatsappLink } from "../lib/site";
 
 const POINTS = ["Freshly baked to order", "Designed around you", "Marbled flavours available"];
-const SLIDE_MS = 5000;
+const SLIDE_MS = 3500;
 const IMAGE_SIZES = "(min-width: 1024px) 34vw, 80vw";
 
 export default function Hero() {
@@ -122,7 +122,7 @@ export default function Hero() {
                     initial={{ opacity: 0, scale: 1.06 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1.4, ease: EASE }}
+                    transition={{ duration: 1.1, ease: EASE }}
                     className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
                   />
                 </AnimatePresence>
