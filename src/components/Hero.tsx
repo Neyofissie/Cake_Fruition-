@@ -17,12 +17,18 @@ export default function Hero() {
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "12%"]);
   const wordY = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "-30%"]);
 
-  // Rotate the cakes in the arch; paused for reduced motion and while the visitor hovers or focuses it.
+  // Rotate the cakes in the arch. Paused for reduced motion, while a mouse hovers it, while the indicators
+  // have keyboard focus, and while a finger or button is held down on it. A quick tap moves to the next cake.
   const [slide, setSlide] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [held, setHeld] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const paused = hovered || held || focused;
+  const press = useRef<{ x: number; y: number; t: number } | null>(null);
+  const next = () => setSlide((s) => (s + 1) % HERO_SLIDES.length);
   useEffect(() => {
     if (reduce || paused) return;
-    const id = window.setTimeout(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), SLIDE_MS);
+    const id = window.setTimeout(next, SLIDE_MS);
     return () => window.clearTimeout(id);
   }, [slide, reduce, paused]);
   // Warm the cache for the next cake so the crossfade never shows an empty arch.
@@ -104,14 +110,35 @@ export default function Hero() {
             {/* Offset hairline arch behind the photo */}
             <div aria-hidden className="absolute -inset-3 translate-x-5 translate-y-5 rounded-t-full border border-ink/25 sm:-inset-4" />
             <div
-              className="relative h-full overflow-hidden rounded-t-full bg-light-grey"
-              onMouseEnter={() => setPaused(true)}
-              onMouseLeave={() => setPaused(false)}
+              className="relative h-full cursor-pointer select-none overflow-hidden rounded-t-full bg-light-grey [-webkit-touch-callout:none]"
+              onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
+              onPointerLeave={(e) => {
+                if (e.pointerType === "mouse") setHovered(false);
+                press.current = null;
+                setHeld(false);
+              }}
+              onPointerDown={(e) => {
+                press.current = { x: e.clientX, y: e.clientY, t: e.timeStamp };
+                setHeld(true);
+              }}
+              onPointerUp={(e) => {
+                const p = press.current;
+                press.current = null;
+                setHeld(false);
+                // A short press that barely moved is a tap; anything longer was a hold.
+                if (p && e.timeStamp - p.t < 350 && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 10) next();
+              }}
+              onPointerCancel={() => {
+                press.current = null;
+                setHeld(false);
+              }}
+              onContextMenu={(e) => e.preventDefault()}
             >
               <motion.div style={{ y: imageY, scale: 1.12 }} className="absolute inset-0">
                 <AnimatePresence initial={false}>
                   <motion.img
                     key={current.title}
+                    draggable={false}
                     src={current.image.src}
                     srcSet={current.image.srcSet}
                     sizes={IMAGE_SIZES}
@@ -134,8 +161,8 @@ export default function Hero() {
             role="group"
             aria-label="Choose a featured cake"
             className="relative mt-10 flex items-center justify-center gap-2"
-            onFocus={() => setPaused(true)}
-            onBlur={() => setPaused(false)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           >
             {HERO_SLIDES.map((s, i) => (
               <button
