@@ -27,6 +27,12 @@ npm run build      # outputs dist/ (static site) + dist/server.cjs
 npm start          # serves dist/ on $PORT (default 3000)
 ```
 
+### GitHub Pages
+
+Every push to `main` builds the site and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`). One-time setup: in the repository go to **Settings → Pages** and set **Source** to **GitHub Actions**. The site is served at `https://neyofissie.github.io/Cake_Fruition-/`. To use your own domain, add it under **Settings → Pages → Custom domain**.
+
+### Other hosts
+
 `dist/` minus `server.cjs` is a plain static site, so you can also deploy it to any static host (Netlify, Vercel, Cloudflare Pages, S3).
 
 ## Project layout
