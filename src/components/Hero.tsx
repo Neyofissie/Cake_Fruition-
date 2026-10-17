@@ -1,12 +1,14 @@
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll, useTransform, useReducedMotion } from "motion/react";
 import CTAButton from "./CTAButton";
 import { EASE, fadeUp, stagger } from "./Reveal";
 import { RotatingBadge, Sprig } from "./Motifs";
-import { HERO_IMAGE } from "../lib/content";
+import { HERO_SLIDES } from "../lib/content";
 import { DEFAULT_ENQUIRY, whatsappLink } from "../lib/site";
 
 const POINTS = ["Freshly baked to order", "Designed around you", "Marbled flavours available"];
+const SLIDE_MS = 5000;
+const IMAGE_SIZES = "(min-width: 1024px) 34vw, 80vw";
 
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -14,6 +16,23 @@ export default function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "12%"]);
   const wordY = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "-30%"]);
+
+  // Rotate the cakes in the arch; paused for reduced motion and while the visitor hovers or focuses it.
+  const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (reduce || paused) return;
+    const id = window.setTimeout(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), SLIDE_MS);
+    return () => window.clearTimeout(id);
+  }, [slide, reduce, paused]);
+  // Warm the cache for the next cake so the crossfade never shows an empty arch.
+  useEffect(() => {
+    const next = HERO_SLIDES[(slide + 1) % HERO_SLIDES.length].image;
+    const img = new Image();
+    img.sizes = IMAGE_SIZES;
+    img.srcset = next.srcSet;
+  }, [slide]);
+  const current = HERO_SLIDES[slide];
 
   return (
     <section
@@ -83,20 +102,57 @@ export default function Hero() {
           >
             {/* Offset hairline arch behind the photo */}
             <div aria-hidden className="absolute -inset-3 translate-x-5 translate-y-5 rounded-t-full border border-ink/25 sm:-inset-4" />
-            <div className="relative h-full overflow-hidden rounded-t-full bg-light-grey">
-              <motion.img
-                style={{ y: imageY, scale: 1.12 }}
-                src={HERO_IMAGE.image.src}
-                srcSet={HERO_IMAGE.image.srcSet}
-                sizes="(min-width: 1024px) 34vw, 80vw"
-                alt={HERO_IMAGE.alt}
-                fetchPriority="high"
-                width={1024}
-                height={1536}
-                className="h-full w-full object-cover object-[50%_35%]"
-              />
+            <div
+              className="relative h-full overflow-hidden rounded-t-full bg-light-grey"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
+              <motion.div style={{ y: imageY, scale: 1.12 }} className="absolute inset-0">
+                <AnimatePresence initial={false}>
+                  <motion.img
+                    key={current.title}
+                    src={current.image.src}
+                    srcSet={current.image.srcSet}
+                    sizes={IMAGE_SIZES}
+                    alt={current.alt}
+                    fetchPriority={slide === 0 ? "high" : "auto"}
+                    width={1024}
+                    height={1280}
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.4, ease: EASE }}
+                    className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+                  />
+                </AnimatePresence>
+              </motion.div>
             </div>
           </motion.div>
+
+          <div
+            role="group"
+            aria-label="Choose a featured cake"
+            className="relative mt-10 flex items-center justify-center gap-2"
+            onFocus={() => setPaused(true)}
+            onBlur={() => setPaused(false)}
+          >
+            {HERO_SLIDES.map((s, i) => (
+              <button
+                key={s.title}
+                type="button"
+                onClick={() => setSlide(i)}
+                aria-label={`Show ${s.title}`}
+                aria-pressed={i === slide}
+                className="group flex h-8 items-center px-1"
+              >
+                <span
+                  className={`block h-px transition-all duration-700 ease-luxe ${
+                    i === slide ? "w-10 bg-ink" : "w-4 bg-ink/30 group-hover:bg-ink/60"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
 
           <motion.p
             aria-hidden

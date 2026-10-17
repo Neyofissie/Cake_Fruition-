@@ -168,7 +168,17 @@ export const GALLERY: GalleryItem[] = [
   },
 ];
 
-export const HERO_IMAGE = GALLERY.find((g) => g.title === "Rose Relief Three-Tier")!;
+const byTitle = (title: string) => GALLERY.find((g) => g.title === title)!;
+
+/** Cakes that rotate through the hero arch, in order. */
+export const HERO_SLIDES = [
+  "Rose Relief Three-Tier",
+  "Blush Cascade Fiftieth",
+  "Noir & Gold Fiftieth",
+  "Ivory Drape & Roses",
+  "Plum, Gold & Sage",
+  "Emerald Fiftieth",
+].map(byTitle);
 export const ABOUT_IMAGE = GALLERY.find((g) => g.title === "Ivory Drape & Roses")!;
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
