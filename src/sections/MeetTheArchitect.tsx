@@ -26,7 +26,7 @@ export default function MeetTheArchitect() {
                 src={PORTRAIT.src}
                 srcSet={PORTRAIT.srcSet}
                 sizes="(min-width: 1024px) 34vw, 86vw"
-                alt="Portrait of the founder and cake architect of Cake Fruition, smiling with arms folded"
+                alt="Mopelola Babalola, founder and cake architect of Cake Fruition, smiling with arms folded"
                 loading="lazy"
                 decoding="async"
                 initial={{ scale: 1.12 }}
@@ -38,9 +38,12 @@ export default function MeetTheArchitect() {
             </div>
           </div>
           <div className="absolute -right-1 bottom-[12%] h-24 w-24 rounded-full bg-ink sm:h-28 sm:w-28">
-            <RotatingBadge tone="light" text="Founder · Cake architect · " className="h-full w-full p-1" />
+            <RotatingBadge tone="light" text="Mopelola · Cake architect · " className="h-full w-full p-1" />
           </div>
-          <p className="eyebrow mt-10 text-center text-off-white/60">Founder &amp; Cake Architect</p>
+          <div className="mt-10 text-center">
+            <p className="font-serif text-[2rem] leading-tight">Mopelola Babalola</p>
+            <p className="eyebrow mt-2 text-off-white/60">Founder &amp; Cake Architect</p>
+          </div>
         </Reveal>
 
         <div className="lg:col-span-6 lg:col-start-7">
@@ -50,8 +53,8 @@ export default function MeetTheArchitect() {
               The Hands Behind <span className="italic text-off-white/80">Every Layer</span>
             </h2>
             <p className="mt-7 max-w-xl text-[1.05rem] leading-[1.8] text-off-white/75">
-              Every Cake Fruition cake is designed and built by our founder and cake architect. Each one is planned like a
-              small piece of architecture, from the structure of the tiers to the last sugar petal, so it looks beautiful on
+              Every Cake Fruition cake is designed and built by Mopelola Babalola, our founder and cake architect. She plans
+              each one like a small piece of architecture, from the structure of the tiers to the last sugar petal, so it looks beautiful on
               the table and tastes even better on the plate.
             </p>
           </Reveal>
@@ -73,11 +76,11 @@ export default function MeetTheArchitect() {
 
           <Reveal className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <CTAButton
-              href={whatsappLink("Hi Cake Fruition! I'd love to talk through a cake design with you.")}
+              href={whatsappLink("Hi Mopelola! I'd love to talk through a cake design with you.")}
               variant="light"
               icon="whatsapp"
             >
-              Talk to the Architect
+              Talk to Mopelola
             </CTAButton>
             <p aria-hidden className="font-script text-4xl text-off-white/80">
               Cake Fruition
