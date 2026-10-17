@@ -112,10 +112,18 @@ export const GALLERY: GalleryItem[] = [
     image: cake("emerald-fiftieth"),
   },
   {
+    title: "Jessica Fortieth",
+    category: "Birthday",
+    alt: "Tall ivory buttercream 40th birthday cake with a sloped top, gold name and number, painted pink and teal accents, pink gerberas and dark green feathers",
+    image: cake("jessica-forty"),
+    featured: true,
+  },
+  {
     title: "Plum, Gold & Sage",
     category: "Tiered",
-    alt: "Three-tier cake with a textured plum top, metallic gold middle and sage green base with sugar flowers",
+    alt: "Three-tier cake with a plum top tier covered in relief flowers, a metallic gold middle tier, and a sage green base with vines, plum roses and gold fan accents",
     image: cake("plum-gold-tiers"),
+    featured: true,
   },
   {
     title: "Noir & Gold Fiftieth",
@@ -133,14 +141,27 @@ export const GALLERY: GalleryItem[] = [
   {
     title: "Sage Garden Fifteen",
     category: "Birthday",
-    alt: "Sage green birthday cake with a gold number 15 and fresh garden flowers on top",
+    alt: "Sage green buttercream 15th birthday cake with piped wave texture, a gold name topper and number 15, gold pearls and pink daisies",
     image: cake("sage-fifteen"),
+  },
+  {
+    title: "Happy Eighteenth Bloom",
+    category: "Birthday",
+    alt: "Tall naked sponge 18th birthday cake with cream layers, cascading peonies, lavender and blue poppies, and a gold Happy 18th topper",
+    image: cake("happy-eighteenth-bloom"),
+    featured: true,
   },
   {
     title: "Lavender Column",
     category: "Tiered",
     alt: "Tall lavender cake with a ruffled watercolour band and a crown of dried flowers",
     image: cake("lavender-column"),
+  },
+  {
+    title: "Autumn Harvest",
+    category: "Celebration",
+    alt: "Two-tier autumn cake with a chocolate woodgrain base, an ivory top tier scattered with orange and brown sugar leaves, and sugar pumpkins, pomegranates and berries on top",
+    image: cake("autumn-harvest"),
   },
   {
     title: "Ice Princess",
