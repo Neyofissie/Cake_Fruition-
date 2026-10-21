@@ -189,9 +189,7 @@ export const HERO_SLIDES = [
   "Rose Relief Three-Tier",
   "Blush Cascade Fiftieth",
   "Noir & Gold Fiftieth",
-  "Ivory Drape & Roses",
   "Plum, Gold & Sage",
-  "Emerald Fiftieth",
 ].map(byTitle);
 /**
  * The two frames the hero scrubs between as the visitor scrolls. Until the generated start/finish scene
@@ -212,11 +210,10 @@ const CUTOUTS: Record<string, string> = {
   "Emerald Fiftieth": "emerald-fiftieth",
 };
 
+export const withCutout = (item: GalleryItem) => ({ ...item, cutout: cake(`${CUTOUTS[item.title]}-cutout`) });
+
 /** Cakes the signature spotlight scrolls through, starting with the hero's finished cake for continuity. */
-export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)].map((item) => ({
-  ...item,
-  cutout: cake(`${CUTOUTS[item.title]}-cutout`),
-}));
+export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)].map(withCutout);
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
 export const ORDER_STEPS = [

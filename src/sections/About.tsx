@@ -2,13 +2,13 @@ import { useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import Reveal, { EASE, fadeUp, stagger } from "../components/Reveal";
 import { ArrowIcon, SparkleIcon } from "../components/Icons";
-import { PILLARS, SPOTLIGHT_CAKES } from "../lib/content";
+import { GALLERY, PILLARS, withCutout } from "../lib/content";
 import { useRotation } from "../lib/useRotation";
 import { useMediaQuery } from "../lib/useMediaQuery";
 
 // The cakes the About scene floats, picked from the thumbnails at the bottom left.
 const ABOUT_CAKES = ["Ivory Drape & Roses", "Noir & Gold Fiftieth", "Blush Cascade Fiftieth"].map(
-  (title) => SPOTLIGHT_CAKES.find((c) => c.title === title)!,
+  (title) => withCutout(GALLERY.find((c) => c.title === title)!),
 );
 
 // Line icons on a 24px grid, one per pillar.
