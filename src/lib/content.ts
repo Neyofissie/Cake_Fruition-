@@ -75,8 +75,6 @@ export type GalleryItem = {
   category: GalleryCategory;
   alt: string;
   image: CakeImage;
-  /** Shown as a large tile in the gallery grid. */
-  featured?: boolean;
 };
 
 export const GALLERY: GalleryItem[] = [
@@ -85,7 +83,6 @@ export const GALLERY: GalleryItem[] = [
     category: "Celebration",
     alt: "Tall two-tier blush pink 50th birthday cake with sculpted fondant waves, a cascade of pink, burgundy and gold sugar roses and a gold monogram topper, styled on a marble table with baby's breath and gold accents",
     image: cake("blush-cascade-fifty"),
-    featured: true,
   },
   {
     title: "Rose Relief Three-Tier",
@@ -116,21 +113,18 @@ export const GALLERY: GalleryItem[] = [
     category: "Birthday",
     alt: "Tall ivory buttercream 40th birthday cake with a sloped top, gold name and number, painted pink and teal accents, pink gerberas and dark green feathers",
     image: cake("jessica-forty"),
-    featured: true,
   },
   {
     title: "Plum, Gold & Sage",
     category: "Tiered",
     alt: "Three-tier cake with a plum top tier covered in relief flowers, a metallic gold middle tier, and a sage green base with vines, plum roses and gold fan accents",
     image: cake("plum-gold-tiers"),
-    featured: true,
   },
   {
     title: "Noir & Gold Fiftieth",
     category: "Celebration",
     alt: "Tall black two-tier 50th birthday cake with gold lettering, a gold crest monogram, black fondant fans with gold damask and a gold sports-themed topper, styled on a marble table with baby's breath and gold accents",
     image: cake("noir-gold-fifty"),
-    featured: true,
   },
   {
     title: "Storybook Stack",
@@ -149,7 +143,6 @@ export const GALLERY: GalleryItem[] = [
     category: "Birthday",
     alt: "Tall naked sponge 18th birthday cake with cream layers, cascading peonies, lavender and blue poppies, and a gold Happy 18th topper",
     image: cake("happy-eighteenth-bloom"),
-    featured: true,
   },
   {
     title: "Lavender Column",

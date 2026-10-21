@@ -14,6 +14,7 @@ import { ArrowIcon, SparkleIcon } from "./Icons";
 import { FeaturedReadout, SpotlightArch, SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
 import { HERO_FRAMES, HERO_SLIDES, SPOTLIGHT_CAKES } from "../lib/content";
 import { useRotation } from "../lib/useRotation";
+import { useMediaQuery } from "../lib/useMediaQuery";
 import { DEFAULT_ENQUIRY, whatsappLink } from "../lib/site";
 
 /** Screens of scroll the pinned desktop hero plays over (the section is this many screens + 1 tall). */
@@ -24,18 +25,6 @@ const SCREENS = 5;
  * which snaps back to the start once the range is passed). */
 const ramp = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)));
 
-/** True from the `lg` breakpoint up, where the hero is pinned and plays both scenes. */
-function useIsDesktop() {
-  const [desktop, setDesktop] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const onChange = () => setDesktop(mq.matches);
-    onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return desktop;
-}
 
 // Line icons on a 24px grid for the feature row.
 const FEATURES = [
@@ -175,7 +164,7 @@ export default function Hero() {
   //   spotlight (cloud stage, giant word, details) builds around it, then the cake settles into an arch;
   //   carousel (1.95 → 4.75): each further stretch of scroll turns to the next featured cake.
   // Phones scroll normally, play scene 1 as the hero passes, and get the spotlight as its own section.
-  const desktop = useIsDesktop();
+  const desktop = useMediaQuery("(min-width: 1024px)");
   const innerRef = useRef<HTMLDivElement>(null);
   const [shift, setShift] = useState(0);
   useEffect(() => {
