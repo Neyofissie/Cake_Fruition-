@@ -1,4 +1,3 @@
-import type { HTMLAttributes } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { EASE } from "./Reveal";
 import { ArrowIcon } from "./Icons";
@@ -126,21 +125,6 @@ export function FeaturedReadout({
   );
 }
 
-/** The arched photo frame the spotlight cakes sit in, with an offset hairline arch behind it. */
-export function SpotlightArch({ children, className = "", ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={`relative aspect-[4/5] ${className}`}>
-      <div aria-hidden className="absolute inset-0 translate-x-4 translate-y-4 rounded-t-full border border-ink/25" />
-      <div
-        className="relative h-full overflow-hidden rounded-t-full bg-light-grey shadow-[0_40px_80px_-40px_rgba(11,11,11,0.55)]"
-        {...rest}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
 /** Caption block, menu button and scroll button laid around the cake. */
 export function SpotlightDetails({ layout, titleId }: { layout: "overlay" | "stacked"; titleId: string }) {
   const overlay = layout === "overlay";
@@ -189,28 +173,27 @@ export default function SpotlightSection() {
         <SpotlightBackdrop className="absolute inset-0" />
         <div className="relative flex flex-col items-center px-5 pb-8 pt-12 text-center">
           <SpotlightWord className="text-[23vw] sm:text-[19vw]" />
-          <SpotlightArch
-            className="-mt-[12vw] w-[68%] max-w-[22rem] cursor-pointer select-none [-webkit-touch-callout:none]"
+          <div
+            className="relative -mt-[12vw] h-[100vw] max-h-[34rem] w-full cursor-pointer select-none [-webkit-touch-callout:none]"
             {...handlers}
           >
+            <div aria-hidden className="absolute -bottom-1 left-1/2 h-6 w-[60%] -translate-x-1/2 rounded-[50%] bg-ink/20 blur-xl" />
             <AnimatePresence initial={false}>
               <motion.img
                 key={cake.title}
                 draggable={false}
-                src={cake.image.src}
-                srcSet={cake.image.srcSet}
-                sizes="70vw"
+                src={cake.cutout.large}
                 alt={cake.alt}
                 loading="lazy"
                 decoding="async"
-                initial={{ opacity: 0, scale: 1.06 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.9, ease: EASE }}
-                className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+                initial={{ opacity: 0, x: 60, scale: 0.92 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -60, scale: 0.92 }}
+                transition={{ duration: 0.8, ease: EASE }}
+                className="absolute inset-0 h-full w-full origin-bottom object-contain object-bottom drop-shadow-[0_24px_24px_rgba(34,30,26,0.18)]"
               />
             </AnimatePresence>
-          </SpotlightArch>
+          </div>
           <FeaturedReadout index={index} onSelect={setIndex} className="mt-8 flex flex-col items-center" />
           <div className="relative mt-8 flex flex-col items-center gap-6">
             <SpotlightDetails layout="stacked" titleId="spotlight-title-mobile" />

@@ -11,7 +11,7 @@ import {
 import CTAButton from "./CTAButton";
 import { EASE, fadeUp, stagger } from "./Reveal";
 import { ArrowIcon, SparkleIcon } from "./Icons";
-import { FeaturedReadout, SpotlightArch, SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
+import { FeaturedReadout, SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
 import { HERO_FRAMES, HERO_SLIDES, SPOTLIGHT_CAKES } from "../lib/content";
 import { useRotation } from "../lib/useRotation";
 import { useMediaQuery } from "../lib/useMediaQuery";
@@ -123,7 +123,7 @@ function StageLabel({ index, label, stage, last }: { index: number; label: strin
   );
 }
 
-/** One cake in the spotlight arch; slides sideways and fades with the carousel position. */
+/** One background-free cake on the spotlight stage; glides sideways, shrinks and fades with the carousel position. */
 function CarouselSlide({
   index,
   position,
@@ -135,21 +135,18 @@ function CarouselSlide({
   cake: (typeof SPOTLIGHT_CAKES)[number];
   active: boolean;
 }) {
-  const x = useTransform(position, (v) => `${(index - v) * 100}%`);
+  const x = useTransform(position, (v) => `${(index - v) * 22}vw`);
   const opacity = useTransform(position, (v) => Math.max(0, 1 - Math.abs(index - v)));
-  const scale = useTransform(position, (v) => 1 + 0.08 * Math.min(1, Math.abs(index - v)));
+  const scale = useTransform(position, (v) => 1 - 0.14 * Math.min(1, Math.abs(index - v)));
   return (
     <motion.img
-      src={cake.image.src}
-      srcSet={cake.image.srcSet}
-      sizes="48vh"
+      src={cake.cutout.large}
       alt={active ? cake.alt : ""}
       aria-hidden={!active}
-      loading="lazy"
       decoding="async"
       draggable={false}
       style={{ x, opacity, scale }}
-      className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+      className="absolute inset-0 h-full w-full origin-bottom object-contain object-bottom drop-shadow-[0_30px_30px_rgba(34,30,26,0.18)]"
     />
   );
 }
@@ -184,11 +181,12 @@ export default function Hero() {
   const at = (a: number, b: number) => (v: number) => (desktop ? ramp(v * SCREENS, a, b) : 0);
   const scene1 = (v: number) => (desktop ? ramp(v * SCREENS, 0.16, 0.72) : ramp(v, 0.25, 0.7));
   const scene1End = (v: number) => (desktop ? ramp(v * SCREENS, 0.24, 0.8) : ramp(v, 0.3, 0.75));
-  const toArch = at(1.55, 1.85);
+  // The finished-cake photo hands over to its background-free cut-out, which the carousel then moves.
+  const toCutout = at(1.6, 1.8);
 
   const startOpacity = useTransform(p, (v) => 1 - scene1(v));
   const startScale = useTransform(p, (v) => 1 - 0.06 * scene1(v));
-  const endOpacity = useTransform(p, (v) => scene1End(v) * (1 - toArch(v)));
+  const endOpacity = useTransform(p, (v) => scene1End(v) * (1 - toCutout(v)));
   const endScale = useTransform(p, (v) => 1.08 - 0.08 * scene1End(v));
 
   const copyOpacity = useTransform(p, (v) => 1 - at(0.84, 1.12)(v));
@@ -208,8 +206,7 @@ export default function Hero() {
   const detailsOpacity = useTransform(p, (v) => at(1.36, 1.76)(v));
   const detailsY = useTransform(p, (v) => 24 * (1 - at(1.36, 1.76)(v)));
   const detailsEvents = useTransform(p, (v) => (at(1.36, 1.76)(v) > 0.5 ? "auto" : "none"));
-  const archOpacity = useTransform(p, (v) => toArch(v));
-  const archScale = useTransform(p, (v) => 0.92 + 0.08 * toArch(v));
+  const carouselOpacity = useTransform(p, (v) => toCutout(v));
   const stage = useTransform(p, (v) => (desktop ? ramp(v * SCREENS, 0.16, 0.8) + at(0.84, 1.76)(v) : scene1(v)));
 
   // Carousel position: 0 → (cakes - 1) across the last stretch of the pinned scroll.
@@ -509,16 +506,16 @@ export default function Hero() {
           </motion.div>
         </div>
 
-        {/* Carousel: the centred cake settles into an arch, then each stretch of scroll turns to the next cake */}
+        {/* Carousel: the centred cake swaps to its cut-out, then each stretch of scroll glides in the next cake.
+            Sized to sit where the moved hero photo shows the cake, so the hand-over is seamless. */}
         <motion.div
-          style={{ opacity: archOpacity, scale: archScale }}
-          className="pointer-events-none absolute inset-0 z-10 hidden items-center justify-center pt-[7vh] lg:flex"
+          style={{ opacity: carouselOpacity }}
+          className="pointer-events-none absolute inset-x-0 bottom-[6.4rem] z-10 hidden h-[calc((100svh-12rem)*0.87)] lg:block"
         >
-          <SpotlightArch className="h-[60vh]">
-            {SPOTLIGHT_CAKES.map((cake, i) => (
-              <CarouselSlide key={cake.title} index={i} position={position} cake={cake} active={i === spotlightIndex} />
-            ))}
-          </SpotlightArch>
+          <div aria-hidden className="absolute -bottom-2 left-1/2 h-8 w-[26vw] -translate-x-1/2 rounded-[50%] bg-ink/20 blur-xl" />
+          {SPOTLIGHT_CAKES.map((cake, i) => (
+            <CarouselSlide key={cake.title} index={i} position={position} cake={cake} active={i === spotlightIndex} />
+          ))}
         </motion.div>
 
         {/* Scene 2 details laid around the centred cake */}

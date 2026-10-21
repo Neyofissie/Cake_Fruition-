@@ -202,8 +202,21 @@ export const HERO_FRAMES = {
   end: byTitle("Plum, Gold & Sage"),
   fullBleed: false,
 };
+// Background-free versions of the spotlight cakes, so they can glide over the stage without a frame.
+const CUTOUTS: Record<string, string> = {
+  "Plum, Gold & Sage": "plum-gold-tiers",
+  "Rose Relief Three-Tier": "tiered-rose",
+  "Blush Cascade Fiftieth": "blush-cascade-fifty",
+  "Noir & Gold Fiftieth": "noir-gold-fifty",
+  "Ivory Drape & Roses": "ivory-drape",
+  "Emerald Fiftieth": "emerald-fiftieth",
+};
+
 /** Cakes the signature spotlight scrolls through, starting with the hero's finished cake for continuity. */
-export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)];
+export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)].map((item) => ({
+  ...item,
+  cutout: cake(`${CUTOUTS[item.title]}-cutout`),
+}));
 export const ABOUT_IMAGE = GALLERY.find((g) => g.title === "Sage Garden Fifteen")!;
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
