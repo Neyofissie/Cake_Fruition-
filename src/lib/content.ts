@@ -217,7 +217,6 @@ export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c 
   ...item,
   cutout: cake(`${CUTOUTS[item.title]}-cutout`),
 }));
-export const ABOUT_IMAGE = GALLERY.find((g) => g.title === "Sage Garden Fifteen")!;
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
 export const ORDER_STEPS = [

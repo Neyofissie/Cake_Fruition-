@@ -1,202 +1,268 @@
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
-import Reveal, { fadeUp, stagger } from "../components/Reveal";
-import SectionLabel from "../components/SectionLabel";
-import { ArrowIcon } from "../components/Icons";
-import { ABOUT_IMAGE, PILLARS } from "../lib/content";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import Reveal, { EASE, fadeUp, stagger } from "../components/Reveal";
+import { ArrowIcon, SparkleIcon } from "../components/Icons";
+import { PILLARS, SPOTLIGHT_CAKES } from "../lib/content";
+import { useRotation } from "../lib/useRotation";
+import { useMediaQuery } from "../lib/useMediaQuery";
 
-// Where each pillar's round button leads.
-const PILLAR_LINKS = ["#menu", "#gallery", "#order"];
+// The cakes the About scene floats, picked from the thumbnails at the bottom left.
+const ABOUT_CAKES = ["Ivory Drape & Roses", "Noir & Gold Fiftieth", "Blush Cascade Fiftieth"].map(
+  (title) => SPOTLIGHT_CAKES.find((c) => c.title === title)!,
+);
 
-/** A soft sugar "stone": an organic rounded blob shaded like a pebble. */
-function Stone({ id, className = "", d }: { id: string; className?: string; d: string }) {
-  return (
-    <svg viewBox="0 0 300 220" className={className} aria-hidden>
-      <defs>
-        <radialGradient id={id} cx="38%" cy="30%" r="80%">
-          <stop offset="0%" stopColor="#c9d1cb" />
-          <stop offset="55%" stopColor="#8e9a92" />
-          <stop offset="100%" stopColor="#56615a" />
-        </radialGradient>
-      </defs>
-      <path d={d} fill={`url(#${id})`} />
-    </svg>
-  );
-}
+// Line icons on a 24px grid, one per pillar.
+const PILLAR_ICONS = [
+  <g key="0"><path d="M4 20h16M6 20v-7h12v7M6 16.5h12" /><path d="M10 10c-1.2-1.2 1.2-2.4 0-3.6M14 10c-1.2-1.2 1.2-2.4 0-3.6" /></g>,
+  <g key="1"><path d="M5 20h14M7 20v-6h10v6" /><path d="m14 3 3 3-6 6H8V9l6-6Z" /></g>,
+  <g key="2"><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /><path d="m10 15 1.5 1.5L15 13" /></g>,
+];
 
-/** A curling fondant ribbon, echoing the sculpted drapes on the cakes. */
-function Ribbon({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 420 260" className={className} aria-hidden>
-      <defs>
-        <linearGradient id="ribbon-outer" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#8fac9c" />
-          <stop offset="100%" stopColor="#3f5a4e" />
-        </linearGradient>
-        <linearGradient id="ribbon-inner" x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#dfe6e0" />
-          <stop offset="100%" stopColor="#8fac9c" />
-        </linearGradient>
-      </defs>
-      <path d="M12 214 C 70 70, 210 8, 336 40 C 392 54, 418 96, 404 132 C 360 92, 262 82, 182 128 C 120 164, 70 214, 12 214 Z" fill="url(#ribbon-outer)" />
-      <path d="M70 200 C 128 120, 226 86, 318 104 C 352 110, 378 124, 392 140 C 330 118, 250 124, 190 156 C 148 178, 110 200, 70 200 Z" fill="url(#ribbon-inner)" opacity="0.9" />
-    </svg>
-  );
-}
-
-/** A floating sphere or pebble that drifts with the scroll at its own speed. */
-function Float({ progress, speed, className }: { progress: MotionValue<number>; speed: number; className: string }) {
+/** A small floating sugar pearl that drifts at its own pace. */
+function Pearl({ className, delay = 0 }: { className: string; delay?: number }) {
   const reduce = useReducedMotion();
-  const y = useTransform(progress, (v) => (reduce ? 0 : (v - 0.5) * speed));
-  return <motion.span aria-hidden style={{ y }} className={`absolute rounded-full ${className}`} />;
+  return (
+    <motion.span
+      aria-hidden
+      className={`absolute rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffffff,#e8e3dc_55%,#9a948c)] shadow-[0_14px_24px_-10px_rgba(11,11,11,0.45)] ${className}`}
+      animate={reduce ? undefined : { y: [0, -14, 0] }}
+      transition={{ duration: 6, delay, repeat: Infinity, ease: "easeInOut" }}
+    />
+  );
 }
 
 export default function About() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const desktop = useMediaQuery("(min-width: 1024px)");
+  const drift = reduce ? 0 : desktop ? 1 : 0.3;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const cakeY = useTransform(scrollYProgress, (v) => (reduce ? 0 : (0.5 - v) * 120));
-  const ribbonRotate = useTransform(scrollYProgress, (v) => (reduce ? 0 : (v - 0.5) * 16));
+  const cakeY = useTransform(scrollYProgress, (v) => (0.5 - v) * 140 * drift);
+  const cakeRotate = useTransform(scrollYProgress, (v) => (v - 0.5) * 8 * drift);
+  const wordX = useTransform(scrollYProgress, (v) => (reduce ? 0 : (0.5 - v) * 160));
+
+  const { index, setIndex, handlers } = useRotation(ABOUT_CAKES.length, 4500);
+  const cake = ABOUT_CAKES[index];
 
   return (
-    <section id="about" ref={ref} aria-labelledby="about-title" className="relative overflow-hidden bg-sage-50">
-      {/* ── Scene: a misty sage landscape with the cake floating above sugar stones ── */}
-      <div className="relative bg-[linear-gradient(180deg,#d4ded6_0%,#e3eae4_55%,#d8e1da_100%)] pb-20 pt-24 sm:pt-32 lg:min-h-[88svh] lg:pb-28">
-        {/* Distant hills and mist */}
-        <svg viewBox="0 0 600 200" preserveAspectRatio="none" aria-hidden className="absolute bottom-[20%] left-0 h-[22%] w-[55%] text-sage-300/60 blur-[1.5px] [mask-image:linear-gradient(to_top,transparent,#000_55%)]">
-          <path d="M0 200 L0 150 L110 60 L190 120 L260 90 L380 200 Z" fill="currentColor" />
-        </svg>
-        <div aria-hidden className="absolute bottom-[18%] left-[-5%] h-[18%] w-[70%] rounded-[50%] bg-white/70 blur-3xl" />
-        <div aria-hidden className="absolute right-[8%] top-[18%] h-[14%] w-[22%] rounded-[50%] bg-white/80 blur-2xl" />
+    <section
+      id="about"
+      ref={ref}
+      aria-labelledby="about-title"
+      className="relative overflow-hidden border-t border-muted-border bg-[radial-gradient(ellipse_at_68%_45%,#ffffff_0%,#faf8f4_45%,#ece6dd_100%)]"
+    >
+      {/* Oversized word drifting behind the cake */}
+      <motion.p
+        aria-hidden
+        style={{ x: wordX }}
+        className="pointer-events-none absolute right-[-4%] top-[8%] select-none font-serif text-[22vw] italic leading-none text-ink/[0.04]"
+      >
+        Studio
+      </motion.p>
 
-        {/* Floating sphere and pebbles, each drifting at its own pace */}
-        <Float progress={scrollYProgress} speed={-160} className="right-[8%] top-[6%] h-12 w-12 lg:left-[46%] lg:right-auto lg:top-[9%] bg-[radial-gradient(circle_at_35%_30%,#eef1ec,#6f8f80_70%,#3f5a4e)] shadow-[0_18px_30px_-12px_rgba(34,48,42,0.6)] sm:h-16 sm:w-16" />
-        <Float progress={scrollYProgress} speed={-260} className="hidden lg:block left-[41%] top-[24%] h-2.5 w-2.5 bg-sage-900/80" />
-        <Float progress={scrollYProgress} speed={-200} className="hidden lg:block left-[44%] top-[31%] h-2 w-2 bg-sage-900/70" />
-        <Float progress={scrollYProgress} speed={-320} className="right-[9%] top-[30%] h-3 w-3 bg-sage-900/70" />
-        <Float progress={scrollYProgress} speed={-240} className="right-[6%] top-[38%] h-2 w-2 bg-sage-900/60" />
-        <Float progress={scrollYProgress} speed={-180} className="right-[13%] top-[44%] h-1.5 w-1.5 bg-sage-900/60" />
+      <div className="relative mx-auto grid max-w-[90rem] items-center gap-10 px-5 pb-16 pt-24 sm:px-8 sm:pt-28 lg:min-h-[100svh] lg:grid-cols-12 lg:gap-6 lg:px-12 lg:pb-12">
+        {/* Copy */}
+        <motion.div
+          variants={stagger(0.1)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "0px 0px -15% 0px" }}
+          className="relative z-10 order-2 lg:order-none lg:col-span-6"
+        >
+          <motion.p
+            variants={fadeUp}
+            className="inline-flex items-center gap-3 rounded-full border border-ink/10 bg-white/60 py-1.5 pl-2 pr-4 backdrop-blur-md"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-off-white">
+              <SparkleIcon size={11} />
+            </span>
+            <span className="eyebrow text-[0.6rem] text-ink">About the Studio</span>
+          </motion.p>
 
-        <div className="relative mx-auto grid max-w-[90rem] items-center gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:px-12">
-          <Reveal className="relative z-10 lg:col-span-5">
-            <SectionLabel>About the Studio</SectionLabel>
-            <h2 id="about-title" className="display mt-7 text-[3rem] text-sage-900 sm:text-[4.2rem] xl:text-[4.8rem]">
-              Baked with Love,
-              <span className="block italic text-sage-700">Designed</span>
-              to Impress
-            </h2>
-            <p className="mt-7 max-w-md leading-[1.8] text-charcoal/85">
-              Cake Fruition brings creativity, quality, and passion together to create unforgettable cakes and desserts.
-              Every cake is freshly baked to order using quality ingredients, soft moist sponge layers, and delicious
-              flavour-matching cream fillings. From elegant wedding cakes to joyful birthday centrepieces, every design is
-              tailored to your celebration.
-            </p>
-            <a href="#menu" className="eyebrow group mt-10 inline-flex items-center gap-4 text-sage-900">
-              <span aria-hidden className="h-px w-12 bg-sage-900 transition-all duration-500 ease-luxe group-hover:w-20" />
-              Explore the menu
+          <motion.h2
+            id="about-title"
+            variants={fadeUp}
+            className="display mt-6 text-[3rem] text-ink sm:text-[4.4rem] lg:text-[clamp(4rem,9vh,5.8rem)]"
+          >
+            Baked with Love,
+            <span className="block italic text-charcoal/75">Designed to Impress</span>
+          </motion.h2>
+
+          <motion.p variants={fadeUp} className="mt-6 max-w-lg leading-[1.8] text-charcoal/85">
+            Cake Fruition brings creativity, quality, and passion together to create unforgettable cakes and desserts.
+            Every cake is freshly baked to order using quality ingredients, soft moist sponge layers, and delicious
+            flavour-matching cream fillings. From elegant wedding cakes to joyful birthday centrepieces, every design is
+            tailored to your celebration.
+          </motion.p>
+
+          <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-5">
+            <a
+              href="#menu"
+              className="eyebrow group inline-flex min-h-12 items-center gap-3 rounded-full bg-ink px-6 text-[0.68rem] text-off-white shadow-[0_14px_34px_-14px_rgba(11,11,11,0.7)] transition-transform hover:-translate-y-0.5"
+            >
+              Explore the Menu
+              <ArrowIcon size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+            </a>
+            <a href="#gallery" className="group inline-flex min-h-12 items-center gap-3 text-ink">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-ink/25 bg-white/60 backdrop-blur-md transition-colors duration-300 group-hover:bg-ink group-hover:text-off-white">
+                <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor" aria-hidden>
+                  <path d="M8 5.5v13l10.5-6.5L8 5.5Z" />
+                </svg>
+              </span>
+              <span className="eyebrow text-[0.68rem]">See Our Work</span>
+            </a>
+          </motion.div>
+
+          {/* Pillars as an icon row */}
+          <motion.ul
+            variants={fadeUp}
+            className="mt-12 grid grid-cols-1 gap-5 border-t border-ink/10 pt-7 sm:grid-cols-3 sm:gap-6"
+          >
+            {PILLARS.map((pillar, i) => (
+              <li key={pillar.title} className="flex items-start gap-3 sm:flex-col">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-white/70">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-[18px] w-[18px] text-ink"
+                    aria-hidden
+                  >
+                    {PILLAR_ICONS[i]}
+                  </svg>
+                </span>
+                <span>
+                  <span className="block text-[0.85rem] font-medium text-ink">{pillar.title}</span>
+                  <span className="mt-1 block text-[0.78rem] leading-relaxed text-stone">{pillar.description}</span>
+                </span>
+              </li>
+            ))}
+          </motion.ul>
+        </motion.div>
+
+        {/* Floating cake */}
+        <div className="relative order-1 h-[110vw] max-h-[44rem] sm:h-[80vw] lg:order-none lg:col-span-6 lg:h-[82svh]">
+          {/* Orbit rings */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="aspect-square h-[78%] rounded-full border border-ink/10" />
+            <div className="absolute aspect-[2.6/1] w-[92%] -rotate-12 rounded-[50%] border border-ink/10" />
+          </div>
+
+          <Pearl className="left-[8%] top-[14%] h-9 w-9" />
+          <Pearl className="right-[10%] top-[52%] h-5 w-5" delay={1.2} />
+          <Pearl className="bottom-[16%] left-[16%] h-4 w-4" delay={2.4} />
+          <Pearl className="left-[24%] top-[34%] h-2.5 w-2.5" delay={0.6} />
+
+          <motion.div
+            style={{ y: cakeY, rotate: cakeRotate }}
+            className="absolute inset-x-[8%] bottom-[6%] top-[4%] cursor-pointer select-none [-webkit-touch-callout:none]"
+            {...handlers}
+          >
+            <motion.div
+              className="absolute inset-0"
+              animate={reduce ? undefined : { y: [0, -16, 0] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <AnimatePresence initial={false}>
+                <motion.img
+                  key={cake.title}
+                  src={cake.cutout.large}
+                  alt={cake.alt}
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                  initial={{ opacity: 0, x: 60, scale: 0.92 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -60, scale: 0.92 }}
+                  transition={{ duration: 0.9, ease: EASE }}
+                  className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_40px_40px_rgba(11,11,11,0.22)]"
+                />
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+          {/* Soft shadow the floating cake casts */}
+          <motion.div
+            aria-hidden
+            className="absolute bottom-[2%] left-1/2 h-6 w-[40%] -translate-x-1/2 rounded-[50%] bg-ink/15 blur-xl"
+            animate={reduce ? undefined : { scaleX: [1, 0.85, 1], opacity: [0.8, 0.55, 0.8] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Glass card */}
+          <Reveal delay={0.2} className="absolute right-0 top-[10%] hidden w-[16.5rem] sm:block">
+            <a
+              href="#order"
+              className="group flex items-start gap-3 rounded-2xl border border-white/80 bg-white/55 p-4 shadow-[0_24px_60px_-28px_rgba(11,11,11,0.45)] backdrop-blur-xl"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-off-white">
+                <SparkleIcon size={15} />
+              </span>
+              <span className="flex-1">
+                <span className="block font-serif text-[1.25rem] leading-tight text-ink">Made to Order</span>
+                <span className="mt-1 block text-[0.78rem] leading-relaxed text-stone">
+                  Freshly baked for your date, never from stock.
+                </span>
+              </span>
+              <ArrowIcon size={16} className="mt-1 text-ink transition-transform duration-300 group-hover:translate-x-1" />
             </a>
           </Reveal>
 
-          {/* The cake, rising out of the mist between two stones */}
-          <div className="relative h-[62vw] max-h-[38rem] min-h-[22rem] lg:col-span-7 lg:h-[72svh]">
-            <motion.img
-              src={ABOUT_IMAGE.image.large}
-              srcSet={ABOUT_IMAGE.image.srcSet}
-              sizes="(min-width: 1024px) 45vw, 90vw"
-              alt={ABOUT_IMAGE.alt}
-              loading="lazy"
-              decoding="async"
-              style={{ y: cakeY }}
-              className="absolute bottom-0 left-1/2 aspect-[3/4] h-full max-w-full -translate-x-1/2 object-cover mix-blend-multiply [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_58%,transparent_100%)]"
-            />
-            {/* Mist rolling in front of the cake's base */}
-            <motion.div
-              aria-hidden
-              className="absolute bottom-[2%] left-[12%] h-[16%] w-[76%] rounded-[50%] bg-white/80 blur-2xl"
-              animate={reduce ? undefined : { x: [0, 24, 0], opacity: [0.75, 1, 0.75] }}
-              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <Stone
-              id="stone-a"
-              d="M14 170 C 6 112, 52 58, 116 48 C 188 38, 262 72, 288 132 C 304 170, 270 206, 210 210 C 140 214, 24 214, 14 170 Z"
-              className="absolute -bottom-6 -left-4 w-[34%] drop-shadow-[0_24px_24px_rgba(34,48,42,0.35)]"
-            />
-            <Stone
-              id="stone-b"
-              d="M20 160 C 18 96, 74 32, 150 26 C 222 20, 290 70, 292 140 C 294 192, 230 214, 156 212 C 80 210, 22 206, 20 160 Z"
-              className="absolute -bottom-10 right-[-2%] w-[42%] drop-shadow-[0_24px_24px_rgba(34,48,42,0.35)]"
-            />
-            <motion.div style={{ rotate: ribbonRotate }} className="absolute bottom-[14%] right-[-6%] w-[46%] origin-bottom-left lg:right-[-10%]">
-              <Ribbon className="w-full drop-shadow-[0_20px_24px_rgba(34,48,42,0.3)]" />
-            </motion.div>
-            <p aria-hidden className="absolute right-[6%] top-[4%] hidden font-script text-5xl text-sage-700 sm:block">
-              Handmade
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Wave into the second half ── */}
-      <svg viewBox="0 0 1440 160" preserveAspectRatio="none" aria-hidden className="relative -mt-[8vw] block h-[10vw] min-h-16 w-full text-sage-50">
-        <path d="M0 160 L0 70 C 260 150 520 -10 860 50 C 1120 96 1300 30 1440 70 L1440 160 Z" fill="currentColor" />
-      </svg>
-
-      {/* ── Promise panel and pillars ── */}
-      <div className="relative -mt-px bg-sage-50 pb-24 lg:pb-28">
-        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:items-stretch lg:gap-10 lg:px-12">
-          {/* Curved panel */}
-          <div className="relative overflow-hidden rounded-[2.5rem] rounded-tr-[45%] bg-[linear-gradient(160deg,#6f8f80_0%,#3f5a4e_70%,#22302a_100%)] px-7 pb-44 pt-14 text-sage-50 sm:px-12 lg:col-span-5 lg:rounded-tr-[60%] lg:pb-52">
-            <Reveal>
-              <p className="eyebrow text-[0.62rem] text-sage-100/75">Our promise</p>
-              <p className="display mt-5 text-[2.6rem] sm:text-[3.2rem]">
-                Three things
-                <span className="block italic text-sage-100/85">every cake gets</span>
-              </p>
-              <p className="mt-5 max-w-xs text-[0.95rem] leading-relaxed text-sage-100/80">
-                However big or small the celebration, these never change.
-              </p>
-            </Reveal>
-            <motion.div style={{ rotate: ribbonRotate }} className="absolute -bottom-8 -right-6 w-[78%] max-w-[26rem] origin-bottom-right">
-              <Ribbon className="w-full opacity-95" />
-            </motion.div>
-            <Stone
-              id="stone-c"
-              d="M18 150 C 8 96, 60 40, 130 36 C 204 32, 278 82, 282 140 C 286 192, 220 212, 146 210 C 70 208, 26 196, 18 150 Z"
-              className="absolute -bottom-4 left-4 w-[34%] max-w-[10rem] drop-shadow-[0_18px_20px_rgba(0,0,0,0.35)]"
-            />
-          </div>
-
-          {/* Pillars */}
-          <motion.ul
-            variants={stagger(0.12)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            className="grid content-center gap-y-12 sm:grid-cols-3 sm:gap-x-0 lg:col-span-7"
+          {/* Thumbnail picker */}
+          <Reveal
+            delay={0.3}
+            className="absolute bottom-0 left-0 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/55 p-2.5 pr-4 shadow-[0_24px_60px_-28px_rgba(11,11,11,0.45)] backdrop-blur-xl"
           >
-            {PILLARS.map((pillar, i) => (
-              <motion.li
-                key={pillar.title}
-                variants={fadeUp}
-                whileHover={{ y: -6 }}
-                transition={{ type: "spring", stiffness: 260, damping: 24 }}
-                className="flex flex-col sm:border-l sm:border-sage-300/60 sm:px-7 sm:first:border-l-0 sm:first:pl-0 lg:first:border-l lg:first:pl-7"
-              >
-                <p className="font-serif text-lg italic text-sage-500">0{i + 1}</p>
-                <h3 className="mt-3 font-serif text-[1.85rem] leading-tight text-sage-900">{pillar.title}</h3>
-                <p className="mt-3 flex-1 text-[0.95rem] leading-relaxed text-charcoal/80">{pillar.description}</p>
-                <a
-                  href={PILLAR_LINKS[i]}
-                  aria-label={`${pillar.title}: find out more`}
-                  className={`mt-8 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_14px_30px_-12px_rgba(34,48,42,0.55)] transition-transform duration-300 hover:scale-105 ${
-                    i === 1 ? "bg-ink text-off-white" : "bg-sage-500 text-sage-50"
+            <div role="group" aria-label="Choose a cake" className="flex gap-2">
+              {ABOUT_CAKES.map((c, i) => (
+                <button
+                  key={c.title}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={`Show ${c.title}`}
+                  aria-pressed={i === index}
+                  className={`relative h-14 w-14 overflow-hidden rounded-xl border bg-off-white transition-all duration-300 sm:h-16 sm:w-16 ${
+                    i === index ? "border-ink shadow-[0_8px_20px_-10px_rgba(11,11,11,0.6)]" : "border-ink/10 opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <ArrowIcon size={18} />
-                </a>
-              </motion.li>
-            ))}
-          </motion.ul>
+                  <img src={c.cutout.src} alt="" className="absolute inset-1 h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] object-contain" />
+                </button>
+              ))}
+            </div>
+            <div className="hidden sm:block">
+              <p className="eyebrow text-[0.55rem] text-stone">{ABOUT_CAKES.length} Signatures</p>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.p
+                  key={cake.title}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-1 max-w-[9rem] font-serif text-[1rem] leading-tight text-ink"
+                >
+                  {cake.title}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+          </Reveal>
+
+          <a
+            href="#menu"
+            aria-label="Scroll down to the menu"
+            className="group absolute bottom-2 right-0 hidden flex-col items-center gap-2 lg:flex"
+          >
+            <span className="relative block h-10 w-6 rounded-full border border-ink/45 transition-colors group-hover:border-ink">
+              <motion.span
+                aria-hidden
+                className="absolute left-1/2 top-2 h-2 w-[3px] -translate-x-1/2 rounded-full bg-ink"
+                animate={reduce ? undefined : { y: [0, 12, 0], opacity: [1, 0.15, 1] }}
+                transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+              />
+            </span>
+            <span className="eyebrow text-[0.55rem] text-charcoal">Scroll down</span>
+          </a>
         </div>
       </div>
     </section>
