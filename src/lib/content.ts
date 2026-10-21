@@ -209,6 +209,8 @@ export const HERO_FRAMES = {
   end: byTitle("Plum, Gold & Sage"),
   fullBleed: false,
 };
+/** Cakes the signature spotlight scrolls through, starting with the hero's finished cake for continuity. */
+export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)];
 export const ABOUT_IMAGE = GALLERY.find((g) => g.title === "Ivory Drape & Roses")!;
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 

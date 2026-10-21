@@ -1,13 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import CTAButton from "./CTAButton";
 import { EASE, fadeUp, stagger } from "./Reveal";
 import { ArrowIcon, SparkleIcon } from "./Icons";
-import { SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
-import { HERO_FRAMES, HERO_SLIDES } from "../lib/content";
+import { FeaturedReadout, SpotlightArch, SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
+import { HERO_FRAMES, HERO_SLIDES, SPOTLIGHT_CAKES } from "../lib/content";
+import { useRotation } from "../lib/useRotation";
 import { DEFAULT_ENQUIRY, whatsappLink } from "../lib/site";
 
-const SLIDE_MS = 3500;
+/** Screens of scroll the pinned desktop hero plays over (the section is this many screens + 1 tall). */
+const SCREENS = 5;
 
 /** 0 before `a`, 1 after `b`, linear between. Function-form transforms keep the frames in their final
  * state past the end of the scroll range (the array form can be handed to a native scroll timeline,
@@ -96,19 +106,19 @@ function ScrollCue({ progress, className = "" }: { progress: MotionValue<number>
 const STAGES = ["Freshly baked", "Finished", "Signature"];
 
 /** "01 Freshly baked — 02 Finished — 03 Signature": the current stage is solid, the others faded. */
-function StageTrack({ progress, stage, className = "" }: { progress: MotionValue<number>; stage: MotionValue<number>; className?: string }) {
+function StageTrack({ stage, className = "" }: { stage: MotionValue<number>; className?: string }) {
   return (
     <div aria-hidden className={`flex items-center gap-4 ${className}`}>
       {STAGES.map((label, i) => (
-        <StageLabel key={label} index={i} label={label} stage={stage} last={i === STAGES.length - 1} progress={progress} />
+        <StageLabel key={label} index={i} label={label} stage={stage} last={i === STAGES.length - 1} />
       ))}
     </div>
   );
 }
 
-function StageLabel({ index, label, stage, last, progress }: { index: number; label: string; stage: MotionValue<number>; last: boolean; progress: MotionValue<number> }) {
+function StageLabel({ index, label, stage, last }: { index: number; label: string; stage: MotionValue<number>; last: boolean }) {
   const tone = useTransform(stage, (s) => Math.max(0.35, 1 - Math.abs(s - index)));
-  const fill = useTransform(progress, (v) => ramp(v * (STAGES.length - 1), index, index + 1));
+  const fill = useTransform(stage, (s) => ramp(s, index, index + 1));
   return (
     <>
       <motion.span style={{ opacity: tone }} className="eyebrow whitespace-nowrap text-[0.58rem] text-ink">
@@ -124,14 +134,46 @@ function StageLabel({ index, label, stage, last, progress }: { index: number; la
   );
 }
 
+/** One cake in the spotlight arch; slides sideways and fades with the carousel position. */
+function CarouselSlide({
+  index,
+  position,
+  cake,
+  active,
+}: {
+  index: number;
+  position: MotionValue<number>;
+  cake: (typeof SPOTLIGHT_CAKES)[number];
+  active: boolean;
+}) {
+  const x = useTransform(position, (v) => `${(index - v) * 100}%`);
+  const opacity = useTransform(position, (v) => Math.max(0, 1 - Math.abs(index - v)));
+  const scale = useTransform(position, (v) => 1 + 0.08 * Math.min(1, Math.abs(index - v)));
+  return (
+    <motion.img
+      src={cake.image.src}
+      srcSet={cake.image.srcSet}
+      sizes="48vh"
+      alt={active ? cake.alt : ""}
+      aria-hidden={!active}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      style={{ x, opacity, scale }}
+      className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+    />
+  );
+}
+
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
 
-  // Large screens pin the hero for two extra screens of scroll and play two scenes:
-  //   scene 1 (0 → 0.4): the start frame dissolves into the finished cake;
-  //   scene 2 (0.42 → 0.88): the copy lifts away, the cake glides to the centre and the signature
-  //   spotlight (cloud stage, giant word, details) builds around it.
+  // Large screens pin the hero for five screens of scroll and play it as one continuous sequence:
+  //   scene 1 (screens 0 → 0.8): the start frame dissolves into the finished cake;
+  //   scene 2 (0.84 → 1.85): the copy lifts away, the cake glides to the centre and the signature
+  //   spotlight (cloud stage, giant word, details) builds around it, then the cake settles into an arch;
+  //   carousel (1.95 → 4.75): each further stretch of scroll turns to the next featured cake.
   // Phones scroll normally, play scene 1 as the hero passes, and get the spotlight as its own section.
   const desktop = useIsDesktop();
   const innerRef = useRef<HTMLDivElement>(null);
@@ -149,44 +191,45 @@ export default function Hero() {
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const p = scrollYProgress;
-  const [fadeA, fadeB] = desktop ? [0.08, 0.36] : [0.25, 0.7];
-  const startOpacity = useTransform(p, (v) => 1 - ramp(v, fadeA, fadeB));
-  const startScale = useTransform(p, (v) => 1 - 0.06 * ramp(v, 0, fadeB));
-  const endOpacity = useTransform(p, (v) => ramp(v, fadeA + 0.04, fadeB + 0.04));
-  const endScale = useTransform(p, (v) => 1.08 - 0.08 * ramp(v, 0, fadeB));
+  // Desktop timings are in screens of scroll; on phones only scene 1 plays, over the hero's own height.
+  const at = (a: number, b: number) => (v: number) => (desktop ? ramp(v * SCREENS, a, b) : 0);
+  const scene1 = (v: number) => (desktop ? ramp(v * SCREENS, 0.16, 0.72) : ramp(v, 0.25, 0.7));
+  const scene1End = (v: number) => (desktop ? ramp(v * SCREENS, 0.24, 0.8) : ramp(v, 0.3, 0.75));
+  const toArch = at(1.55, 1.85);
 
-  const scene2 = (a: number, b: number) => (v: number) => (desktop ? ramp(v, a, b) : 0);
-  const copyOpacity = useTransform(p, (v) => 1 - scene2(0.42, 0.56)(v));
-  const copyEvents = useTransform(p, (v) => (scene2(0.42, 0.56)(v) > 0.5 ? "none" : "auto"));
-  const contentY = useTransform(p, (v) => (reduce ? 0 : -36 * ramp(v, 0, fadeB)) - 70 * scene2(0.42, 0.58)(v));
-  const chromeOpacity = useTransform(p, (v) => 1 - scene2(0.42, 0.52)(v));
-  const framesX = useTransform(p, (v) => -shift * scene2(0.45, 0.8)(v));
-  const framesScale = useTransform(p, (v) => 1 - 0.1 * scene2(0.45, 0.8)(v));
-  const framesY = useTransform(p, (v) => 28 * scene2(0.45, 0.8)(v));
-  const stageOpacity = useTransform(p, (v) => scene2(0.45, 0.66)(v));
+  const startOpacity = useTransform(p, (v) => 1 - scene1(v));
+  const startScale = useTransform(p, (v) => 1 - 0.06 * scene1(v));
+  const endOpacity = useTransform(p, (v) => scene1End(v) * (1 - toArch(v)));
+  const endScale = useTransform(p, (v) => 1.08 - 0.08 * scene1End(v));
+
+  const copyOpacity = useTransform(p, (v) => 1 - at(0.84, 1.12)(v));
+  const copyEvents = useTransform(p, (v) => (at(0.84, 1.12)(v) > 0.5 ? "none" : "auto"));
+  const contentY = useTransform(p, (v) => (reduce ? 0 : -36 * scene1(v)) - 70 * at(0.84, 1.16)(v));
+  const chromeOpacity = useTransform(p, (v) => 1 - at(0.84, 1.04)(v));
+  const framesX = useTransform(p, (v) => -shift * at(0.9, 1.6)(v));
+  const framesScale = useTransform(p, (v) => 1 - 0.1 * at(0.9, 1.6)(v));
+  const framesY = useTransform(p, (v) => 28 * at(0.9, 1.6)(v));
+  const stageOpacity = useTransform(p, (v) => at(0.9, 1.32)(v));
   const stageClip = useTransform(p, (v) => {
-    const a = scene2(0.48, 0.8)(v);
+    const a = at(0.96, 1.6)(v);
     return `inset(${a * 11}% ${a * 2.2}% ${a * 3}% ${a * 2.2}% round ${a * 40}px)`;
   });
-  const wordOpacity = useTransform(p, (v) => scene2(0.55, 0.8)(v));
-  const wordY = useTransform(p, (v) => 80 * (1 - scene2(0.55, 0.85)(v)));
-  const detailsOpacity = useTransform(p, (v) => scene2(0.68, 0.88)(v));
-  const detailsY = useTransform(p, (v) => 24 * (1 - scene2(0.68, 0.88)(v)));
-  const detailsEvents = useTransform(p, (v) => (scene2(0.68, 0.88)(v) > 0.5 ? "auto" : "none"));
-  const stage = useTransform(p, (v) => (desktop ? 2 * ramp(v, fadeA, 0.8) : ramp(v, fadeA, fadeB)));
+  const wordOpacity = useTransform(p, (v) => at(1.1, 1.6)(v));
+  const wordY = useTransform(p, (v) => 80 * (1 - at(1.1, 1.7)(v)));
+  const detailsOpacity = useTransform(p, (v) => at(1.36, 1.76)(v));
+  const detailsY = useTransform(p, (v) => 24 * (1 - at(1.36, 1.76)(v)));
+  const detailsEvents = useTransform(p, (v) => (at(1.36, 1.76)(v) > 0.5 ? "auto" : "none"));
+  const archOpacity = useTransform(p, (v) => toArch(v));
+  const archScale = useTransform(p, (v) => 0.92 + 0.08 * toArch(v));
+  const stage = useTransform(p, (v) => (desktop ? ramp(v * SCREENS, 0.16, 0.8) + at(0.84, 1.76)(v) : scene1(v)));
 
-  // Featured cake in the glass card. Auto-advances; a quick tap moves on, holding keeps it, hover pauses.
-  const [slide, setSlide] = useState(0);
-  const [hovered, setHovered] = useState(false);
-  const [held, setHeld] = useState(false);
-  const paused = hovered || held;
-  const press = useRef<{ x: number; y: number; t: number } | null>(null);
-  const next = () => setSlide((s) => (s + 1) % HERO_SLIDES.length);
-  useEffect(() => {
-    if (reduce || paused) return;
-    const id = window.setTimeout(next, SLIDE_MS);
-    return () => window.clearTimeout(id);
-  }, [slide, reduce, paused]);
+  // Carousel position: 0 → (cakes - 1) across the last stretch of the pinned scroll.
+  const position = useTransform(p, (v) => (SPOTLIGHT_CAKES.length - 1) * at(1.95, 4.75)(v));
+  const [spotlightIndex, setSpotlightIndex] = useState(0);
+  useMotionValueEvent(position, "change", (v) => setSpotlightIndex(Math.round(v)));
+
+  // Featured cake in the glass card: auto-advances; tap moves on, hold keeps it, hover pauses.
+  const { index: slide, setIndex: setSlide, handlers } = useRotation(HERO_SLIDES.length);
   const current = HERO_SLIDES[slide];
 
   const { start, end, fullBleed } = HERO_FRAMES;
@@ -196,28 +239,7 @@ export default function Hero() {
     <div className="flex items-center gap-4 rounded-2xl border border-white/80 bg-white/55 p-3 pr-4 shadow-[0_24px_60px_-28px_rgba(11,11,11,0.45)] backdrop-blur-xl">
       <div
         className="relative h-20 w-16 shrink-0 cursor-pointer select-none overflow-hidden rounded-xl bg-light-grey [-webkit-touch-callout:none]"
-        onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
-        onPointerLeave={(e) => {
-          if (e.pointerType === "mouse") setHovered(false);
-          press.current = null;
-          setHeld(false);
-        }}
-        onPointerDown={(e) => {
-          press.current = { x: e.clientX, y: e.clientY, t: e.timeStamp };
-          setHeld(true);
-        }}
-        onPointerUp={(e) => {
-          const p = press.current;
-          press.current = null;
-          setHeld(false);
-          // A short press that barely moved is a tap; anything longer was a hold.
-          if (p && e.timeStamp - p.t < 350 && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 10) next();
-        }}
-        onPointerCancel={() => {
-          press.current = null;
-          setHeld(false);
-        }}
-        onContextMenu={(e) => e.preventDefault()}
+        {...handlers}
       >
         <AnimatePresence initial={false}>
           <motion.img
@@ -279,7 +301,7 @@ export default function Hero() {
   );
 
   return (
-    <section id="home" ref={ref} aria-labelledby="hero-title" className="relative bg-off-white lg:h-[300vh]">
+    <section id="home" ref={ref} aria-labelledby="hero-title" className="relative bg-off-white lg:h-[600vh]">
       <div className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
         {/* Studio light: a soft glow behind the cake fading to warm grey at the edges */}
         <div
@@ -407,7 +429,7 @@ export default function Hero() {
 
             {/* Stage track and mouse cue inside the frame on phones and tablets */}
             <div className="absolute inset-x-0 bottom-3 flex items-end justify-end gap-8 lg:hidden">
-              <StageTrack progress={p} stage={stage} className="hidden sm:flex" />
+              <StageTrack stage={stage} className="hidden sm:flex" />
               <ScrollCue progress={p} />
             </div>
           </div>
@@ -498,17 +520,30 @@ export default function Hero() {
           </motion.div>
         </div>
 
+        {/* Carousel: the centred cake settles into an arch, then each stretch of scroll turns to the next cake */}
+        <motion.div
+          style={{ opacity: archOpacity, scale: archScale }}
+          className="pointer-events-none absolute inset-0 z-10 hidden items-center justify-center pt-[7vh] lg:flex"
+        >
+          <SpotlightArch className="h-[60vh]">
+            {SPOTLIGHT_CAKES.map((cake, i) => (
+              <CarouselSlide key={cake.title} index={i} position={position} cake={cake} active={i === spotlightIndex} />
+            ))}
+          </SpotlightArch>
+        </motion.div>
+
         {/* Scene 2 details laid around the centred cake */}
         <motion.div
           style={{ opacity: detailsOpacity, y: detailsY, pointerEvents: detailsEvents }}
           className="absolute inset-0 z-20 hidden lg:block"
         >
           <SpotlightDetails layout="overlay" titleId="spotlight-title" />
+          <FeaturedReadout index={spotlightIndex} className="absolute right-[7%] top-[30%] w-[17rem]" />
         </motion.div>
 
         {/* Stage track and mouse cue along the bottom edge on desktop, through both scenes */}
         <div className="absolute bottom-8 right-12 z-30 hidden items-end gap-10 lg:flex">
-          <StageTrack progress={p} stage={stage} />
+          <StageTrack stage={stage} />
           <ScrollCue progress={p} />
         </div>
       </div>
