@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import Reveal, { EASE } from "../components/Reveal";
 import { ArrowIcon, ChevronIcon, WhatsAppIcon } from "../components/Icons";
 import { FINISHES, GALLERY, POPULAR_FLAVOURS, SPECIAL_FLAVOURS, withCutout, type Flavour } from "../lib/content";
@@ -7,8 +7,6 @@ import { whatsappLink } from "../lib/site";
 
 const byTitle = (title: string) => withCutout(GALLERY.find((g) => g.title === title)!);
 
-// Cakes on the dark stage, chosen from the thumbnails.
-const STAGE_CAKES = ["Blush Cascade Fiftieth", "Rose Relief Three-Tier", "Noir & Gold Fiftieth", "Plum, Gold & Sage"].map(byTitle);
 
 type MenuCategory = {
   key: string;
@@ -156,128 +154,29 @@ function RestingCard({ category, onSelect }: { category: MenuCategory; onSelect:
 }
 
 export default function Menu() {
-  const reduce = useReducedMotion();
-  const [stage, setStage] = useState(0);
   const [active, setActive] = useState(0);
   const step = (d: number) => setActive((a) => (a + d + CATEGORIES.length) % CATEGORIES.length);
-  const stageCake = STAGE_CAKES[stage];
 
   return (
     <section id="menu" aria-labelledby="menu-title" className="bg-off-white">
-      {/* ── Stage: dark, headline left, floating cake, vertical word panel right ── */}
-      <div className="relative overflow-hidden bg-[radial-gradient(ellipse_at_55%_45%,#2a2a2a_0%,#161616_45%,#0b0b0b_100%)] text-off-white">
-        <div className="relative mx-auto grid max-w-[90rem] items-center gap-10 px-5 pb-16 pt-24 sm:px-8 lg:min-h-[88svh] lg:grid-cols-12 lg:gap-0 lg:px-12 lg:py-0">
-          <Reveal className="relative z-10 lg:col-span-5 lg:pb-16 lg:pt-28">
-            <p className="eyebrow text-off-white/60">Cake Fruition is…</p>
-            <h2 id="menu-title" className="display mt-5 text-[3.4rem] uppercase sm:text-[4.6rem] xl:text-[5.4rem]">
-              <span className="font-normal text-off-white/80">Freshly</span>
-              <span className="block">Baked</span>
-              <span className="block italic normal-case">Cake Menu</span>
-            </h2>
-            <p className="mt-6 max-w-md leading-relaxed text-off-white/70">
-              Choose from classic favourites, indulgent specials, and beautiful finishing options. Every cake is freshly
-              baked, soft and moist, and served with delicious flavour-matching cream fillings.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <span className="inline-flex flex-col justify-center rounded-full border border-off-white/25 px-6 py-2.5 leading-tight">
-                <span className="font-serif text-[1.35rem]">9 flavours</span>
-                <span className="eyebrow text-[0.5rem] text-off-white/55">Baked to order</span>
-              </span>
-              <span className="inline-flex flex-col justify-center rounded-full bg-off-white px-6 py-2.5 leading-tight text-ink">
-                <span className="font-serif text-[1.35rem]">Marbled</span>
-                <span className="eyebrow text-[0.5rem] text-stone">Mix any two</span>
-              </span>
-            </div>
-
-            <div role="group" aria-label="Choose a cake to show" className="mt-10 flex gap-3">
-              {STAGE_CAKES.map((c, i) => (
-                <button
-                  key={c.title}
-                  type="button"
-                  onClick={() => setStage(i)}
-                  aria-label={`Show ${c.title}`}
-                  aria-pressed={i === stage}
-                  className={`relative h-20 w-16 overflow-hidden rounded-xl border transition-all duration-300 sm:h-24 sm:w-20 ${
-                    i === stage ? "border-off-white/70 bg-off-white/10" : "border-off-white/10 bg-off-white/[0.04] opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <img src={c.cutout.src} alt="" className="absolute inset-1.5 h-[calc(100%-0.75rem)] w-[calc(100%-0.75rem)] object-contain" />
-                </button>
-              ))}
-            </div>
-            <p className="eyebrow mt-4 text-[0.55rem] tracking-[0.6em] text-off-white/45">Cake Fruition · Custom Cakes</p>
-          </Reveal>
-
-          {/* Floating cake */}
-          <div className="relative z-10 h-[105vw] max-h-[40rem] sm:h-[70vw] lg:col-span-4 lg:h-[76svh]">
-            <motion.div
-              className="absolute inset-0"
-              animate={reduce ? undefined : { y: [0, -14, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <AnimatePresence initial={false}>
-                <motion.img
-                  key={stageCake.title}
-                  src={stageCake.cutout.large}
-                  alt={stageCake.alt}
-                  initial={{ opacity: 0, x: 80, rotate: 6 }}
-                  animate={{ opacity: 1, x: 0, rotate: -4 }}
-                  exit={{ opacity: 0, x: -80, rotate: -10 }}
-                  transition={{ duration: 0.8, ease: EASE }}
-                  className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_40px_40px_rgba(0,0,0,0.55)]"
-                />
-              </AnimatePresence>
-            </motion.div>
-            <div aria-hidden className="absolute bottom-[1%] left-1/2 h-6 w-[50%] -translate-x-1/2 rounded-[50%] bg-black/60 blur-xl" />
-          </div>
-
-          {/* Vertical word panel */}
-          <div className="relative hidden h-full lg:col-span-3 lg:block">
-            <div className="absolute -right-12 bottom-0 left-[-30%] top-0 rounded-l-[3rem] bg-off-white">
-              <div className="absolute inset-y-0 right-8 flex items-center gap-1 overflow-hidden">
-                <span className="block rotate-180 whitespace-nowrap [writing-mode:vertical-rl] font-serif text-[clamp(4rem,12.5vh,7.8rem)] uppercase leading-[0.85] text-ink">Flavours</span>
-                <span className="block rotate-180 whitespace-nowrap [writing-mode:vertical-rl] font-serif text-[clamp(4rem,12.5vh,7.8rem)] uppercase leading-[0.85] text-transparent [-webkit-text-stroke:1px_#0b0b0b]">
-                  Flavours
-                </span>
-              </div>
-              <div className="absolute bottom-8 left-[28%] flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setStage((s) => (s - 1 + STAGE_CAKES.length) % STAGE_CAKES.length)}
-                  aria-label="Previous cake"
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink/15 text-ink hover:bg-ink hover:text-off-white"
-                >
-                  <ChevronIcon size={18} className="rotate-180" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStage((s) => (s + 1) % STAGE_CAKES.length)}
-                  aria-label="Next cake"
-                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink text-off-white"
-                >
-                  <ChevronIcon size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ── Cards: the selected category rises, dark, with order options ── */}
-      <div className="relative overflow-hidden pb-24 pt-20 sm:pb-28">
+      <div className="relative overflow-hidden border-t border-muted-border pb-24 pt-24 sm:pb-28 sm:pt-28">
         <div aria-hidden className="absolute -top-40 left-1/2 aspect-square w-[60rem] -translate-x-[30%] rounded-full bg-light-grey/45" />
         <div className="relative mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
           <Reveal className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div>
-              <p className="eyebrow text-stone">Custom Celebration Cakes</p>
-              <h3 className="display mt-4 text-[2.6rem] sm:text-[3.6rem]">
+              <p className="eyebrow text-stone">Cake Menu</p>
+              <h2 id="menu-title" className="display mt-4 text-[2.8rem] sm:text-[4rem]">
                 Build your <span className="italic">cake</span>
-              </h3>
+              </h2>
+              <p className="mt-5 max-w-xl leading-relaxed text-charcoal/80">
+                Choose from classic favourites, indulgent specials, and beautiful finishing options. Every cake is freshly
+                baked, soft and moist, and served with delicious flavour-matching cream fillings.
+              </p>
             </div>
-            <p className="max-w-md text-[0.95rem] leading-relaxed text-stone lg:text-right">
-              Pick a card, choose your flavour, finish and size, and we&rsquo;ll pre-write your WhatsApp message. Prices vary
-              with size, design and decoration.
+            <p className="max-w-sm text-[0.95rem] leading-relaxed text-stone lg:text-right">
+              Pick a card, choose your flavour, finish and size, and we&rsquo;ll pre-write your WhatsApp message. Marbled cakes
+              can mix any two flavours. Prices vary with size, design and decoration.
             </p>
           </Reveal>
 
