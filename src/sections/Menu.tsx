@@ -38,8 +38,8 @@ const SERVINGS = ["Up to 12", "15 to 25", "30 to 50", "60+"];
 /** Underlined select styled for the dark order card. */
 function CardSelect({ id, label, value, options, onChange }: { id: string; label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-off-white/15 py-2.5">
-      <label htmlFor={id} className="font-serif text-[1.25rem] text-off-white/70">
+    <div className="flex items-center justify-between gap-4 border-b border-off-white/25 py-2.5">
+      <label htmlFor={id} className="font-serif text-[1.25rem] text-off-white/85">
         {label}
       </label>
       <div className="relative">
@@ -74,38 +74,34 @@ function ActiveCard({ category, onStep }: { category: MenuCategory; onStep: (d: 
   }, [marbled, flavour, second, finish, servings]);
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-ink p-6 pt-0 text-off-white shadow-[0_40px_80px_-30px_rgba(11,11,11,0.65)] sm:p-7 sm:pt-0">
-      {/* Fine diamond texture, like a pressed fondant pattern */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-48 opacity-[0.07] [background-image:linear-gradient(45deg,#fff_1px,transparent_1px),linear-gradient(-45deg,#fff_1px,transparent_1px)] [background-size:22px_22px]"
-      />
+    <div className="relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-ink p-6 text-off-white shadow-[0_40px_80px_-30px_rgba(11,11,11,0.65)] sm:p-7">
+      {/* The full cake photo fills the card, under a dark veil so the text stays readable */}
+      <AnimatePresence initial={false}>
+        <motion.img
+          key={category.key}
+          src={category.cake.image.large}
+          alt=""
+          aria-hidden
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: EASE }}
+          className="absolute inset-0 h-full w-full object-cover object-[50%_25%]"
+        />
+      </AnimatePresence>
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink/35 via-ink/70 to-ink/90" />
       <div className="relative flex items-center justify-between">
-        <button type="button" onClick={() => onStep(-1)} aria-label="Previous menu card" className="flex h-11 w-11 items-center justify-center rounded-full text-off-white/80 hover:text-off-white">
+        <button type="button" onClick={() => onStep(-1)} aria-label="Previous menu card" className="flex h-11 w-11 items-center justify-center rounded-full bg-ink/30 text-off-white backdrop-blur-sm hover:bg-ink/60">
           <ChevronIcon size={22} className="rotate-180" />
         </button>
-        <div className="relative -mt-14 h-44 w-36 sm:h-48">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.img
-              key={category.key}
-              src={category.cake.cutout.src}
-              alt=""
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.9 }}
-              transition={{ duration: 0.5, ease: EASE }}
-              className="absolute inset-0 h-full w-full object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.5)]"
-            />
-          </AnimatePresence>
-        </div>
-        <button type="button" onClick={() => onStep(1)} aria-label="Next menu card" className="flex h-11 w-11 items-center justify-center rounded-full text-off-white/80 hover:text-off-white">
+        <button type="button" onClick={() => onStep(1)} aria-label="Next menu card" className="flex h-11 w-11 items-center justify-center rounded-full bg-ink/30 text-off-white backdrop-blur-sm hover:bg-ink/60">
           <ChevronIcon size={22} />
         </button>
       </div>
 
-      <p className="eyebrow relative mt-4 text-[0.58rem] text-off-white/55">{category.label}</p>
+      <p className="eyebrow relative mt-28 text-[0.58rem] text-off-white/75">{category.label}</p>
       <h3 className="relative mt-2 font-serif text-[2.1rem] leading-[1.02]">{category.title}</h3>
-      <ul className="relative mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[0.8rem] text-off-white/65">
+      <ul className="relative mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[0.8rem] text-off-white/80">
         {category.items.map((item) => (
           <li key={item.name}>{item.name}</li>
         ))}
