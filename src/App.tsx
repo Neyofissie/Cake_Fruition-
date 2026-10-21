@@ -1,6 +1,7 @@
 import { MotionConfig } from "motion/react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
+import SpotlightSection from "./components/Spotlight";
 import Footer from "./components/Footer";
 import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
@@ -25,6 +26,7 @@ export default function App() {
       <Header />
       <main id="main">
         <Hero />
+        <SpotlightSection />
         <Gallery />
         <About />
         <MeetTheArchitect />

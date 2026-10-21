@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, typ
 import CTAButton from "./CTAButton";
 import { EASE, fadeUp, stagger } from "./Reveal";
 import { ArrowIcon, SparkleIcon } from "./Icons";
+import { SpotlightBackdrop, SpotlightDetails, SpotlightWord } from "./Spotlight";
 import { HERO_FRAMES, HERO_SLIDES } from "../lib/content";
 import { DEFAULT_ENQUIRY, whatsappLink } from "../lib/site";
 
@@ -12,6 +13,19 @@ const SLIDE_MS = 3500;
  * state past the end of the scroll range (the array form can be handed to a native scroll timeline,
  * which snaps back to the start once the range is passed). */
 const ramp = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)));
+
+/** True from the `lg` breakpoint up, where the hero is pinned and plays both scenes. */
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setDesktop(mq.matches);
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return desktop;
+}
 
 // Line icons on a 24px grid for the feature row.
 const FEATURES = [
@@ -79,22 +93,34 @@ function ScrollCue({ progress, className = "" }: { progress: MotionValue<number>
   );
 }
 
-/** "01 Freshly baked ——— 02 Beautifully finished", filled by scroll progress. */
-function StageTrack({ progress, className = "" }: { progress: MotionValue<number>; className?: string }) {
-  const startTone = useTransform(progress, (v) => 1 - 0.6 * ramp(v, 0.35, 0.65));
-  const endTone = useTransform(progress, (v) => 0.4 + 0.6 * ramp(v, 0.35, 0.65));
+const STAGES = ["Freshly baked", "Finished", "Signature"];
+
+/** "01 Freshly baked — 02 Finished — 03 Signature": the current stage is solid, the others faded. */
+function StageTrack({ progress, stage, className = "" }: { progress: MotionValue<number>; stage: MotionValue<number>; className?: string }) {
   return (
     <div aria-hidden className={`flex items-center gap-4 ${className}`}>
-      <motion.span style={{ opacity: startTone }} className="eyebrow text-[0.58rem] text-ink">
-        <span className="mr-2 font-serif text-sm normal-case tracking-normal">01</span>Freshly baked
-      </motion.span>
-      <span className="relative block h-px w-14 overflow-hidden bg-ink/15 sm:w-20">
-        <motion.span style={{ scaleX: progress }} className="absolute inset-0 origin-left bg-ink" />
-      </span>
-      <motion.span style={{ opacity: endTone }} className="eyebrow text-[0.58rem] text-ink">
-        <span className="mr-2 font-serif text-sm normal-case tracking-normal">02</span>Finished
-      </motion.span>
+      {STAGES.map((label, i) => (
+        <StageLabel key={label} index={i} label={label} stage={stage} last={i === STAGES.length - 1} progress={progress} />
+      ))}
     </div>
+  );
+}
+
+function StageLabel({ index, label, stage, last, progress }: { index: number; label: string; stage: MotionValue<number>; last: boolean; progress: MotionValue<number> }) {
+  const tone = useTransform(stage, (s) => Math.max(0.35, 1 - Math.abs(s - index)));
+  const fill = useTransform(progress, (v) => ramp(v * (STAGES.length - 1), index, index + 1));
+  return (
+    <>
+      <motion.span style={{ opacity: tone }} className="eyebrow whitespace-nowrap text-[0.58rem] text-ink">
+        <span className="mr-2 font-serif text-sm normal-case tracking-normal">0{index + 1}</span>
+        {label}
+      </motion.span>
+      {!last && (
+        <span className="relative block h-px w-10 overflow-hidden bg-ink/15 xl:w-14">
+          <motion.span style={{ scaleX: fill }} className="absolute inset-0 origin-left bg-ink" />
+        </span>
+      )}
+    </>
   );
 }
 
@@ -102,14 +128,52 @@ export default function Hero() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
 
-  // On large screens the hero is pinned for one extra screen of scroll while the start frame dissolves into
-  // the finished one. On phones it scrolls normally and the same change plays as it passes.
+  // Large screens pin the hero for two extra screens of scroll and play two scenes:
+  //   scene 1 (0 → 0.4): the start frame dissolves into the finished cake;
+  //   scene 2 (0.42 → 0.88): the copy lifts away, the cake glides to the centre and the signature
+  //   spotlight (cloud stage, giant word, details) builds around it.
+  // Phones scroll normally, play scene 1 as the hero passes, and get the spotlight as its own section.
+  const desktop = useIsDesktop();
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState(0);
+  useEffect(() => {
+    // Distance from the frame box's centre to the page centre: the box is 56% wide, 48px from the right.
+    const measure = () => {
+      const w = innerRef.current?.clientWidth ?? 0;
+      setShift(Math.max(0, w * 0.22 - 48));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const startOpacity = useTransform(scrollYProgress, (v) => 1 - ramp(v, 0.25, 0.7));
-  const startScale = useTransform(scrollYProgress, (v) => 1 - 0.06 * ramp(v, 0, 1));
-  const endOpacity = useTransform(scrollYProgress, (v) => ramp(v, 0.3, 0.75));
-  const endScale = useTransform(scrollYProgress, (v) => 1.08 - 0.08 * ramp(v, 0, 1));
-  const contentY = useTransform(scrollYProgress, (v) => (reduce ? 0 : -36 * ramp(v, 0, 1)));
+  const p = scrollYProgress;
+  const [fadeA, fadeB] = desktop ? [0.08, 0.36] : [0.25, 0.7];
+  const startOpacity = useTransform(p, (v) => 1 - ramp(v, fadeA, fadeB));
+  const startScale = useTransform(p, (v) => 1 - 0.06 * ramp(v, 0, fadeB));
+  const endOpacity = useTransform(p, (v) => ramp(v, fadeA + 0.04, fadeB + 0.04));
+  const endScale = useTransform(p, (v) => 1.08 - 0.08 * ramp(v, 0, fadeB));
+
+  const scene2 = (a: number, b: number) => (v: number) => (desktop ? ramp(v, a, b) : 0);
+  const copyOpacity = useTransform(p, (v) => 1 - scene2(0.42, 0.56)(v));
+  const copyEvents = useTransform(p, (v) => (scene2(0.42, 0.56)(v) > 0.5 ? "none" : "auto"));
+  const contentY = useTransform(p, (v) => (reduce ? 0 : -36 * ramp(v, 0, fadeB)) - 70 * scene2(0.42, 0.58)(v));
+  const chromeOpacity = useTransform(p, (v) => 1 - scene2(0.42, 0.52)(v));
+  const framesX = useTransform(p, (v) => -shift * scene2(0.45, 0.8)(v));
+  const framesScale = useTransform(p, (v) => 1 - 0.1 * scene2(0.45, 0.8)(v));
+  const framesY = useTransform(p, (v) => 28 * scene2(0.45, 0.8)(v));
+  const stageOpacity = useTransform(p, (v) => scene2(0.45, 0.66)(v));
+  const stageClip = useTransform(p, (v) => {
+    const a = scene2(0.48, 0.8)(v);
+    return `inset(${a * 11}% ${a * 2.2}% ${a * 3}% ${a * 2.2}% round ${a * 40}px)`;
+  });
+  const wordOpacity = useTransform(p, (v) => scene2(0.55, 0.8)(v));
+  const wordY = useTransform(p, (v) => 80 * (1 - scene2(0.55, 0.85)(v)));
+  const detailsOpacity = useTransform(p, (v) => scene2(0.68, 0.88)(v));
+  const detailsY = useTransform(p, (v) => 24 * (1 - scene2(0.68, 0.88)(v)));
+  const detailsEvents = useTransform(p, (v) => (scene2(0.68, 0.88)(v) > 0.5 ? "auto" : "none"));
+  const stage = useTransform(p, (v) => (desktop ? 2 * ramp(v, fadeA, 0.8) : ramp(v, fadeA, fadeB)));
 
   // Featured cake in the glass card. Auto-advances; a quick tap moves on, holding keeps it, hover pauses.
   const [slide, setSlide] = useState(0);
@@ -126,7 +190,7 @@ export default function Hero() {
   const current = HERO_SLIDES[slide];
 
   const { start, end, fullBleed } = HERO_FRAMES;
-  const frameFit = fullBleed ? "object-cover" : "object-contain object-[42%_60%] mix-blend-multiply";
+  const frameFit = fullBleed ? "object-cover" : "object-contain object-[50%_60%]";
 
   const featuredCard = (
     <div className="flex items-center gap-4 rounded-2xl border border-white/80 bg-white/55 p-3 pr-4 shadow-[0_24px_60px_-28px_rgba(11,11,11,0.45)] backdrop-blur-xl">
@@ -215,7 +279,7 @@ export default function Hero() {
   );
 
   return (
-    <section id="home" ref={ref} aria-labelledby="hero-title" className="relative bg-off-white lg:h-[200vh]">
+    <section id="home" ref={ref} aria-labelledby="hero-title" className="relative bg-off-white lg:h-[300vh]">
       <div className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
         {/* Studio light: a soft glow behind the cake fading to warm grey at the edges */}
         <div
@@ -223,108 +287,137 @@ export default function Hero() {
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_72%_48%,#ffffff_0%,#faf8f4_42%,#ece6dd_100%)]"
         />
 
-        <div className="relative mx-auto flex max-w-[90rem] flex-col px-5 pt-[5.5rem] sm:px-8 lg:h-full lg:flex-row lg:items-center lg:px-12 lg:pt-16">
+        {/* Scene 2 (desktop): the cloud stage closes in to a rounded card and the giant word rises behind the cake */}
+        <motion.div
+          aria-hidden
+          style={{ opacity: stageOpacity, clipPath: stageClip }}
+          className="absolute inset-0 hidden lg:block"
+        >
+          <SpotlightBackdrop className="absolute inset-0" />
+        </motion.div>
+        <motion.div
+          aria-hidden
+          style={{ opacity: wordOpacity, y: wordY }}
+          className="pointer-events-none absolute inset-x-0 top-[13%] hidden lg:block"
+        >
+          <SpotlightWord className="text-[16.5vw]" />
+        </motion.div>
+
+        <div ref={innerRef} className="relative mx-auto flex max-w-[90rem] flex-col px-5 pt-[5.5rem] sm:px-8 lg:h-full lg:flex-row lg:items-center lg:px-12 lg:pt-16">
           {/* Start and finish frames */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.3, ease: EASE, delay: 0.15 }}
+          <div
             className={
               fullBleed
                 ? "relative -mx-5 h-[58svh] sm:-mx-8 lg:absolute lg:inset-0 lg:mx-0 lg:h-auto"
                 : "relative h-[56svh] lg:absolute lg:inset-y-0 lg:right-12 lg:h-auto lg:w-[56%]"
             }
           >
-            {/* Thin orbit rings around the cake */}
-            {!fullBleed && (
-              <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            {/* The moving layer blends as a whole (multiply) so the photos' white studio backdrops melt into the stage */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.3, ease: EASE, delay: 0.15 }}
+              style={{ x: framesX, scale: framesScale, y: framesY }}
+              className={`absolute inset-0 ${fullBleed ? "" : "mix-blend-multiply"}`}
+            >
+              {/* Thin orbit rings around the cake */}
+              {!fullBleed && (
                 <motion.div
-                  animate={reduce ? undefined : { rotate: 360 }}
-                  transition={{ duration: 90, ease: "linear", repeat: Infinity }}
-                  className="aspect-square h-[78%] rounded-full border border-ink/10 lg:-translate-x-[8%]"
-                />
-                <div className="absolute aspect-[2.6/1] w-[86%] -rotate-12 rounded-[50%] border border-ink/10 lg:-translate-x-[8%]" />
-              </div>
-            )}
-
-            <div className={`absolute inset-0 ${fullBleed ? "" : "lg:inset-x-0 lg:bottom-24 lg:top-24"}`}>
-              {!reduce && (
-                <motion.img
-                  src={start.image.large}
-                  alt=""
                   aria-hidden
-                  style={{ opacity: startOpacity, scale: startScale }}
-                  fetchPriority="high"
+                  style={{ opacity: chromeOpacity }}
+                  className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                >
+                  <motion.div
+                    animate={reduce ? undefined : { rotate: 360 }}
+                    transition={{ duration: 90, ease: "linear", repeat: Infinity }}
+                    className="aspect-square h-[78%] rounded-full border border-ink/10"
+                  />
+                  <div className="absolute aspect-[2.6/1] w-[86%] -rotate-12 rounded-[50%] border border-ink/10" />
+                </motion.div>
+              )}
+
+              <div className={`absolute inset-0 ${fullBleed ? "" : "lg:inset-x-0 lg:bottom-24 lg:top-24"}`}>
+                {!reduce && (
+                  <motion.img
+                    src={start.image.large}
+                    alt=""
+                    aria-hidden
+                    style={{ opacity: startOpacity, scale: startScale }}
+                    fetchPriority="high"
+                    className={`absolute inset-0 h-full w-full ${frameFit}`}
+                  />
+                )}
+                <motion.img
+                  src={end.image.large}
+                  alt={end.alt}
+                  style={reduce ? undefined : { opacity: endOpacity, scale: endScale }}
                   className={`absolute inset-0 h-full w-full ${frameFit}`}
                 />
+              </div>
+
+              {fullBleed && (
+                <div
+                  aria-hidden
+                  className="absolute inset-0 hidden bg-gradient-to-r from-off-white via-off-white/70 to-transparent lg:block"
+                />
               )}
-              <motion.img
-                src={end.image.large}
-                alt={end.alt}
-                style={reduce ? undefined : { opacity: endOpacity, scale: endScale }}
-                className={`absolute inset-0 h-full w-full ${frameFit}`}
-              />
-            </div>
 
-            {fullBleed && (
-              <div
-                aria-hidden
-                className="absolute inset-0 hidden bg-gradient-to-r from-off-white via-off-white/70 to-transparent lg:block"
-              />
-            )}
-
-            {/* Floating sparkles */}
-            {[
-              { c: "left-[14%] top-[22%]", s: 14, d: 0 },
-              { c: "right-[18%] top-[58%]", s: 10, d: 1.4 },
-              { c: "left-[30%] bottom-[18%]", s: 8, d: 2.2 },
-            ].map((p, i) => (
-              <motion.span
-                key={i}
-                aria-hidden
-                className={`absolute text-ink/50 ${p.c}`}
-                animate={reduce ? undefined : { y: [0, -10, 0], rotate: [0, 30, 0], opacity: [0.35, 0.9, 0.35] }}
-                transition={{ duration: 5, delay: p.d, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <SparkleIcon size={p.s} />
-              </motion.span>
-            ))}
-
-            <motion.p
-              aria-hidden
-              initial={{ opacity: 0, rotate: -10, y: 12 }}
-              animate={{ opacity: 1, rotate: -10, y: 0 }}
-              transition={{ duration: 1.2, ease: EASE, delay: 0.9 }}
-              className="absolute bottom-[16%] left-[4%] hidden font-script text-6xl leading-[0.9] text-ink min-[1400px]:block"
-            >
-              Sweet
-              <br />
-              <span className="ml-10">moments</span>
-            </motion.p>
-
-            {/* Featured cake card (desktop) */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: EASE, delay: 0.8 }}
-              className="absolute right-0 top-28 hidden w-[19rem] lg:block xl:right-4"
-            >
-              {featuredCard}
             </motion.div>
 
-            {/* Stage track and mouse cue: inside the frame on phones, along the bottom edge on desktop */}
-            <div className="absolute inset-x-0 bottom-3 flex items-end justify-end gap-10 lg:bottom-8">
-              <StageTrack progress={scrollYProgress} className="hidden sm:flex" />
-              <ScrollCue progress={scrollYProgress} />
+            {/* Floating sparkles, script accent and featured card fade out as scene 2 begins */}
+            <motion.div style={{ opacity: chromeOpacity, pointerEvents: copyEvents }} className="absolute inset-0">
+              {[
+                { c: "left-[14%] top-[22%]", s: 14, d: 0 },
+                { c: "right-[18%] top-[58%]", s: 10, d: 1.4 },
+                { c: "left-[30%] bottom-[18%]", s: 8, d: 2.2 },
+              ].map((spark, i) => (
+                <motion.span
+                  key={i}
+                  aria-hidden
+                  className={`absolute text-ink/50 ${spark.c}`}
+                  animate={reduce ? undefined : { y: [0, -10, 0], rotate: [0, 30, 0], opacity: [0.35, 0.9, 0.35] }}
+                  transition={{ duration: 5, delay: spark.d, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <SparkleIcon size={spark.s} />
+                </motion.span>
+              ))}
+
+              <motion.p
+                aria-hidden
+                initial={{ opacity: 0, rotate: -10, y: 12 }}
+                animate={{ opacity: 1, rotate: -10, y: 0 }}
+                transition={{ duration: 1.2, ease: EASE, delay: 0.9 }}
+                className="absolute bottom-[16%] left-[4%] hidden font-script text-6xl leading-[0.9] text-ink min-[1400px]:block"
+              >
+                Sweet
+                <br />
+                <span className="ml-10">moments</span>
+              </motion.p>
+
+              {/* Featured cake card (desktop) */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, ease: EASE, delay: 0.8 }}
+                className="absolute right-0 top-28 hidden w-[19rem] lg:block xl:right-4"
+              >
+                {featuredCard}
+              </motion.div>
+            </motion.div>
+
+            {/* Stage track and mouse cue inside the frame on phones and tablets */}
+            <div className="absolute inset-x-0 bottom-3 flex items-end justify-end gap-8 lg:hidden">
+              <StageTrack progress={p} stage={stage} className="hidden sm:flex" />
+              <ScrollCue progress={p} />
             </div>
-          </motion.div>
+          </div>
 
           {/* Copy */}
           <motion.div
             variants={stagger(0.1, 0.1)}
             initial="hidden"
             animate="show"
-            style={{ y: contentY }}
+            style={{ y: contentY, opacity: copyOpacity, pointerEvents: copyEvents }}
             className="relative z-10 pb-14 pt-8 text-center lg:w-[46%] lg:p-0 lg:text-left"
           >
             <motion.p
@@ -404,7 +497,22 @@ export default function Hero() {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Scene 2 details laid around the centred cake */}
+        <motion.div
+          style={{ opacity: detailsOpacity, y: detailsY, pointerEvents: detailsEvents }}
+          className="absolute inset-0 z-20 hidden lg:block"
+        >
+          <SpotlightDetails layout="overlay" titleId="spotlight-title" />
+        </motion.div>
+
+        {/* Stage track and mouse cue along the bottom edge on desktop, through both scenes */}
+        <div className="absolute bottom-8 right-12 z-30 hidden items-end gap-10 lg:flex">
+          <StageTrack progress={p} stage={stage} />
+          <ScrollCue progress={p} />
+        </div>
       </div>
     </section>
   );
 }
+
