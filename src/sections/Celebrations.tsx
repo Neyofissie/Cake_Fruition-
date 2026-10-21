@@ -29,14 +29,14 @@ export default function Celebrations() {
   const message = `Hi Cake Fruition! I'd love to order ${item.title.toLowerCase()}. My date is… and I'm thinking of…`;
 
   return (
-    <section id="order" aria-labelledby="celebrations-title" className="relative overflow-hidden bg-warm-white py-24 sm:py-28">
+    <section id="order" aria-labelledby="celebrations-title" className="relative overflow-hidden bg-warm-white py-24 sm:py-28 lg:flex lg:h-[100svh] lg:min-h-[44rem] lg:flex-col lg:pb-6 lg:pt-[6.5rem]">
       <span id="occasions" className="absolute -top-24" aria-hidden />
-      <div className="mx-auto max-w-[90rem] px-5 sm:px-8 lg:px-12">
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+      <div className="mx-auto w-full max-w-[90rem] px-5 sm:px-8 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:px-12">
+        <div className="grid items-center gap-12 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] lg:gap-8">
           {/* The four ordering steps as vertical labels, like a side index */}
-          <ol aria-label="How to order" className="hidden flex-col items-center justify-center gap-8 lg:col-span-1 lg:flex">
+          <ol aria-label="How to order" className="hidden h-full flex-col items-center justify-center gap-6 lg:col-span-1 lg:flex [@media(max-height:820px)]:!hidden">
             {ORDER_STEPS.map((step, i) => (
-              <li key={step.title} className="eyebrow rotate-180 whitespace-nowrap text-[0.6rem] text-stone [writing-mode:vertical-rl]">
+              <li key={step.title} className="eyebrow rotate-180 whitespace-nowrap text-[0.55rem] text-stone [writing-mode:vertical-rl]">
                 <span className="me-3 font-serif text-sm normal-case tracking-normal text-ink">0{i + 1}</span>
                 {step.title}
               </li>
@@ -44,9 +44,9 @@ export default function Celebrations() {
           </ol>
 
           {/* Black block with the large cake overlapping its edge */}
-          <div className="relative mx-auto h-[118vw] max-h-[40rem] w-full max-w-md sm:h-[34rem] lg:col-span-5 lg:mx-0 lg:h-[38rem] lg:max-w-none">
+          <div className="relative mx-auto h-[118vw] max-h-[40rem] w-full max-w-md sm:h-[34rem] lg:col-span-5 lg:mx-0 lg:h-full lg:max-w-none">
             <div className="absolute inset-y-0 left-[10%] right-[22%] rounded-t-[3rem] bg-ink lg:left-0 lg:right-[30%]">
-              <p className="absolute inset-x-0 top-8 text-center font-serif text-[1.9rem] text-off-white sm:text-[2.2rem]">
+              <p className="absolute inset-x-0 top-8 text-center font-serif text-[1.9rem] text-off-white sm:text-[2.2rem] lg:top-5 lg:text-[1.7rem]">
                 Cake Fruition
               </p>
             </div>
@@ -66,7 +66,7 @@ export default function Celebrations() {
           </div>
 
           {/* Write-up */}
-          <div className="lg:col-span-6 lg:pl-8">
+          <div className="lg:col-span-6 lg:col-start-7 lg:pl-8 lg:[@media(max-height:820px)]:col-span-6">
             <p className="eyebrow text-stone">Occasions &amp; ordering</p>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -76,14 +76,14 @@ export default function Celebrations() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.45, ease: EASE }}
               >
-                <h2 id="celebrations-title" className="display mt-5 text-[3rem] text-ink sm:text-[4.2rem] xl:text-[4.8rem]">
+                <h2 id="celebrations-title" className="display mt-5 text-[3rem] text-ink sm:text-[4.2rem] lg:mt-3 lg:text-[clamp(2.8rem,7vh,4.4rem)]">
                   {item.title}
                 </h2>
-                <p className="mt-5 max-w-lg text-[1.02rem] leading-relaxed text-charcoal/85">{item.description}</p>
+                <p className="mt-5 max-w-lg text-[1.02rem] leading-relaxed text-charcoal/85 lg:mt-3 lg:text-[0.95rem]">{item.description}</p>
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-8 flex flex-wrap items-center gap-5">
+            <div className="mt-8 flex flex-wrap items-center gap-5 lg:mt-5">
               <div className="leading-tight">
                 <p className="font-serif text-[1.8rem] text-ink">Made to order</p>
                 <p className="text-[0.75rem] text-stone">Priced by size, design and finish</p>
@@ -100,7 +100,7 @@ export default function Celebrations() {
             </div>
 
             {/* How to order, compact */}
-            <ol className="mt-10 grid gap-x-6 gap-y-5 border-t border-ink/10 pt-7 sm:grid-cols-2">
+            <ol className="mt-10 grid gap-x-6 gap-y-5 border-t border-ink/10 pt-7 sm:grid-cols-2 lg:mt-6 lg:gap-y-3 lg:pt-5">
               {ORDER_STEPS.map((step, i) => (
                 <li key={step.title} className="flex gap-4">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ink font-serif text-base">
@@ -108,7 +108,7 @@ export default function Celebrations() {
                   </span>
                   <span>
                     <span className="block text-[0.88rem] font-medium text-ink">{step.title}</span>
-                    <span className="mt-1 block text-[0.8rem] leading-relaxed text-stone">{step.description}</span>
+                    <span className="mt-1 block text-[0.8rem] leading-relaxed text-stone lg:text-[0.74rem] lg:leading-snug lg:[@media(max-height:820px)]:hidden">{step.description}</span>
                   </span>
                 </li>
               ))}
@@ -117,11 +117,11 @@ export default function Celebrations() {
         </div>
 
         {/* Occasion cards */}
-        <Reveal className="mt-20">
+        <Reveal className="mt-20 lg:mt-4 lg:shrink-0">
           <div
             role="tablist"
             aria-label="Choose an occasion"
-            className="no-scrollbar -mx-5 flex gap-5 overflow-x-auto px-5 pb-6 pt-10 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:gap-y-14 sm:overflow-visible sm:px-0 xl:grid-cols-6 xl:gap-5"
+            className="no-scrollbar -mx-5 flex gap-5 overflow-x-auto px-5 pb-6 pt-10 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-6 sm:gap-y-14 sm:overflow-visible sm:px-0 lg:grid-cols-6 lg:gap-4 lg:pb-2 lg:pt-8"
           >
             {ITEMS.map((o, i) => {
               const selected = i === active;
@@ -132,21 +132,21 @@ export default function Celebrations() {
                   type="button"
                   aria-selected={selected}
                   onClick={() => setActive(i)}
-                  className={`group relative w-44 shrink-0 rounded-2xl p-4 pt-14 text-left shadow-[0_24px_40px_-24px_rgba(11,11,11,0.6)] transition-all duration-500 ease-luxe sm:w-auto ${
+                  className={`group relative w-44 shrink-0 rounded-2xl p-4 pt-14 text-left lg:p-3 lg:pl-16 lg:pt-3 shadow-[0_24px_40px_-24px_rgba(11,11,11,0.6)] transition-all duration-500 ease-luxe sm:w-auto ${
                     selected ? "-translate-y-2 bg-ink" : "bg-soft-black/90 hover:-translate-y-1 hover:bg-ink"
                   }`}
                 >
                   <span
-                    className={`absolute -left-3 -top-9 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 bg-off-white transition-transform duration-500 ease-luxe group-hover:rotate-6 ${
+                    className={`absolute -left-3 -top-9 flex h-20 w-20 items-center justify-center lg:-left-2 lg:-top-4 lg:h-16 lg:w-16 overflow-hidden rounded-full border-4 bg-off-white transition-transform duration-500 ease-luxe group-hover:rotate-6 ${
                       selected ? "border-off-white" : "border-light-grey"
                     }`}
                   >
                     <img src={o.cake.cutout.src} alt="" loading="lazy" className="h-[85%] w-[85%] object-contain" />
                   </span>
-                  <span className="absolute right-4 top-4 font-serif text-sm italic text-off-white/50">0{i + 1}</span>
-                  <span className="block font-serif text-[1.25rem] leading-tight text-off-white">{o.short}</span>
+                  <span className="absolute right-4 top-4 font-serif text-sm italic text-off-white/50 lg:hidden">0{i + 1}</span>
+                  <span className="block truncate font-serif text-[1.25rem] leading-tight text-off-white lg:text-[1.05rem]">{o.short}</span>
                   <span className="mt-1 block text-[0.68rem] text-off-white/55">{selected ? "Showing now" : "Tap to view"}</span>
-                  <span className="mt-4 flex items-center justify-between text-off-white/70">
+                  <span className="mt-4 flex items-center justify-between text-off-white/70 lg:hidden">
                     <span className="eyebrow text-[0.5rem]">Occasion</span>
                     <ArrowIcon size={14} className="transition-transform group-hover:translate-x-1" />
                   </span>
@@ -154,7 +154,7 @@ export default function Celebrations() {
               );
             })}
           </div>
-          <div aria-hidden className="mt-4 flex justify-center gap-2">
+          <div aria-hidden className="mt-4 flex justify-center gap-2 lg:mt-2">
             {ITEMS.map((o, i) => (
               <span key={o.title} className={`h-2 w-2 rounded-full transition-colors ${i === active ? "bg-ink" : i < active ? "bg-ink/40" : "bg-ink/15"}`} />
             ))}
