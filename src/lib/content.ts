@@ -200,6 +200,15 @@ export const HERO_SLIDES = [
   "Plum, Gold & Sage",
   "Emerald Fiftieth",
 ].map(byTitle);
+/**
+ * The two frames the hero scrubs between as the visitor scrolls. Until the generated start/finish scene
+ * images are added, two white-background cake photos stand in and float on the page (fullBleed: false).
+ */
+export const HERO_FRAMES = {
+  start: byTitle("Happy Eighteenth Bloom"),
+  end: byTitle("Plum, Gold & Sage"),
+  fullBleed: false,
+};
 export const ABOUT_IMAGE = GALLERY.find((g) => g.title === "Ivory Drape & Roses")!;
 export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
