@@ -46,10 +46,10 @@ src/
   lib/images.ts        responsive image helper
   components/ui/       shadcn-style primitives (image-gallery: expanding strips)
   components/          Header, Hero, Spotlight, CTAButton, SectionLabel,
-                       ServiceCard, GalleryGrid (with lightbox),
-                       ProcessStep, FeatureCard, SocialLinkButton, Footer,
+                       GalleryGrid (with lightbox),
+                       FeatureCard, SocialLinkButton, Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
-  sections/            About, Menu, Occasions, Gallery, OrderProcess,
+  sections/            About, Menu, Celebrations (occasions + ordering), Gallery,
                        WhyChoose, QuoteCTA, Social
   assets/cakes/        cake photos as WebP, 640px and 1200px wide
 public/                favicon, Open Graph image, robots.txt

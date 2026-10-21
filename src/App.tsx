@@ -7,9 +7,8 @@ import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
 import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
-import Occasions from "./sections/Occasions";
+import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
-import OrderProcess from "./sections/OrderProcess";
 import WhyChoose from "./sections/WhyChoose";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
@@ -31,8 +30,7 @@ export default function App() {
         <About />
         <MeetTheArchitect />
         <Menu />
-        <Occasions />
-        <OrderProcess />
+        <Celebrations />
         <WhyChoose />
         <QuoteCTA />
         <Social />

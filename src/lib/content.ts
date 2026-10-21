@@ -214,7 +214,6 @@ export const withCutout = (item: GalleryItem) => ({ ...item, cutout: cake(`${CUT
 
 /** Cakes the signature spotlight scrolls through, starting with the hero's finished cake for continuity. */
 export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)].map(withCutout);
-export const ORDER_IMAGE = GALLERY.find((g) => g.title === "Emerald Fiftieth")!;
 
 export const ORDER_STEPS = [
   {
@@ -245,11 +244,3 @@ export const FEATURES = [
   "Beautiful cakes designed to impress and made to be enjoyed",
 ];
 
-export const ENQUIRY_OCCASIONS = [
-  "Birthday",
-  "Wedding",
-  "Baby shower",
-  "Corporate event",
-  "Cupcakes / dessert table",
-  "Other celebration",
-];
