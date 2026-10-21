@@ -45,8 +45,8 @@ src/
   lib/content.ts       menu, occasions, gallery, order steps, features
   lib/images.ts        responsive image helper
   components/ui/       shadcn-style primitives (image-gallery: expanding strips)
-  components/          Header, Hero, CTAButton, SectionLabel, CakeMenuCard,
-                       FlavourList, ServiceCard, GalleryGrid (with lightbox),
+  components/          Header, Hero, Spotlight, CTAButton, SectionLabel,
+                       ServiceCard, GalleryGrid (with lightbox),
                        ProcessStep, FeatureCard, SocialLinkButton, Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
   sections/            About, Menu, Occasions, Gallery, OrderProcess,
