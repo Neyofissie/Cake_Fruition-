@@ -9,7 +9,6 @@ import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
 import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
-import WhyChoose from "./sections/WhyChoose";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
 
@@ -31,7 +30,6 @@ export default function App() {
         <MeetTheArchitect />
         <Menu />
         <Celebrations />
-        <WhyChoose />
         <QuoteCTA />
         <Social />
       </main>

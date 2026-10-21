@@ -47,10 +47,10 @@ src/
   components/ui/       shadcn-style primitives (image-gallery: expanding strips)
   components/          Header, Hero, Spotlight, CTAButton, SectionLabel,
                        GalleryGrid (with lightbox),
-                       FeatureCard, SocialLinkButton, Footer,
+                       SocialLinkButton, Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
   sections/            About, Menu, Celebrations (occasions + ordering), Gallery,
-                       WhyChoose, QuoteCTA, Social
+                       MeetTheArchitect (with why choose us), QuoteCTA, Social
   assets/cakes/        cake photos as WebP, 640px and 1200px wide
 public/                favicon, Open Graph image, robots.txt
 ```
