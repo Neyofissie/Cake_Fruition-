@@ -7,7 +7,6 @@ import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
 import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
-import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
@@ -32,7 +31,6 @@ export default function App() {
         <About />
         <MeetTheArchitect />
         <Menu />
-        <Celebrations />
         <FAQ />
         <QuoteCTA />
         <Social />

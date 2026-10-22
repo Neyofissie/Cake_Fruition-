@@ -194,7 +194,7 @@ export default function About() {
           {/* Glass card */}
           <Reveal delay={0.2} className="absolute right-0 top-[10%] hidden w-[16.5rem] sm:block">
             <a
-              href="#order"
+              href="#contact"
               className="group flex items-start gap-3 rounded-2xl border border-white/80 bg-white/55 p-4 shadow-[0_24px_60px_-28px_rgba(11,11,11,0.45)] backdrop-blur-xl"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-off-white">

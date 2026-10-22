@@ -49,7 +49,7 @@ src/
                        GalleryGrid (with lightbox),
                        SocialLinkButton, Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
-  sections/            About, Menu, Celebrations (occasions + ordering), Gallery,
+  sections/            About, Menu, Gallery, Reviews, FAQ,
                        MeetTheArchitect (with why choose us), QuoteCTA, Social
   assets/cakes/        cake photos as WebP, 640px and 1200px wide
 public/                favicon, Open Graph image, robots.txt
@@ -64,6 +64,6 @@ shadcn CLI or 21st.dev can be added with `npx shadcn@latest add <component>` and
 ## Editing content
 
 - **Phone number and social links:** `src/lib/site.ts`
-- **Flavours, occasions, steps and features:** `src/lib/content.ts`
+- **Flavours, features, reviews and questions:** `src/lib/content.ts`
 - **Adding a gallery photo:** export `name-640.webp` and `name-1200.webp` into `src/assets/cakes/`, then add an entry to `GALLERY` in `src/lib/content.ts` using `cake("name")` and descriptive alt text.
 - **SEO tags and schema:** `index.html`. Once the site has a domain, make the `og:image` URL absolute (for example `https://yourdomain.com/og-image.jpg`) and add a `<link rel="canonical">`.

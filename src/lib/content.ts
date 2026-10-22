@@ -41,33 +41,6 @@ export const FINISHES: Flavour[] = [
   { name: "Fondant", note: "Sharp, sculpted detail" },
 ];
 
-export const OCCASIONS = [
-  {
-    title: "Birthday Cakes",
-    description: "Playful or polished — personalised centrepieces with names, ages and themes your guest of honour will love.",
-  },
-  {
-    title: "Wedding Cakes",
-    description: "Elegant tiered cakes designed around your colours, florals and venue for the most memorable slice of the day.",
-  },
-  {
-    title: "Baby Shower Cakes",
-    description: "Soft, sweet designs to welcome a little one, finished with delicate details and gentle palettes.",
-  },
-  {
-    title: "Corporate Event Cakes",
-    description: "Refined cakes for launches, milestones and team celebrations, styled to suit your brand and occasion.",
-  },
-  {
-    title: "Cupcakes & Dessert Tables",
-    description: "Coordinated cupcakes and sweet treats that dress the table and keep every guest happy.",
-  },
-  {
-    title: "Custom Celebration Cakes",
-    description: "Anniversaries, graduations, christenings and everything in between — if you can imagine it, we'll bake it.",
-  },
-];
-
 export type GalleryCategory = "Tiered" | "Birthday" | "Celebration";
 
 export type GalleryItem = {
