@@ -22,8 +22,8 @@ type ImageGalleryProps = {
 };
 
 /**
- * A row of image strips; the one under the pointer (or focused, or tapped on touch screens) widens to
- * show the full photo. Adapted from the 21st.dev "image gallery" component.
+ * A row of image strips; the one under the pointer (or focused, or tapped on touch screens) widens and
+ * shows the whole photo, uncropped. Adapted from the 21st.dev "image gallery" component.
  */
 export function ImageGallery({ images, onOpen, className, heightClassName = "h-[400px]" }: ImageGalleryProps) {
   // Touch screens have no hover: the first tap opens a strip, a second tap on the open strip calls onOpen.
@@ -50,8 +50,12 @@ export function ImageGallery({ images, onOpen, className, heightClassName = "h-[
               open && "w-full",
             )}
           >
+            {/* Closed: the photo crops to fill the strip */}
             <img
-              className="h-full w-full object-cover object-center transition-transform duration-700 ease-luxe group-hover:scale-[1.03]"
+              className={cn(
+                "h-full w-full object-cover object-center transition-opacity duration-500 ease-luxe group-hover:opacity-0 group-focus-visible:opacity-0",
+                open && "opacity-0",
+              )}
               src={image.src}
               srcSet={image.srcSet}
               sizes="(min-width: 1024px) 50vw, 90vw"
@@ -59,6 +63,31 @@ export function ImageGallery({ images, onOpen, className, heightClassName = "h-[
               loading="lazy"
               decoding="async"
             />
+            {/* Open: the whole photo, uncropped, over a soft blurred copy of itself */}
+            <span
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-0 bg-ink opacity-0 transition-opacity duration-500 ease-luxe group-hover:opacity-100 group-focus-visible:opacity-100",
+                open && "opacity-100",
+              )}
+            >
+              <img
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
+                src={image.src}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                className="absolute inset-0 h-full w-full object-contain"
+                src={image.src}
+                srcSet={image.srcSet}
+                sizes="(min-width: 1024px) 50vw, 90vw"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
             {(image.label || image.caption) && (
               <span
                 className={cn(
