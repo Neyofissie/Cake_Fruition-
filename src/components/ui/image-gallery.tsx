@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { GALLERY } from "@/lib/content";
 
 export type GalleryImage = {
@@ -22,8 +22,8 @@ type ImageGalleryProps = {
 };
 
 /**
- * A row of image strips; the one under the pointer (or focused, or tapped on touch screens) widens and
- * shows the whole photo, uncropped. Adapted from the 21st.dev "image gallery" component.
+ * A row of image strips; the one under the pointer (or focused, or tapped on touch screens) widens to
+ * the photo's own shape, so the whole picture fills its frame. Adapted from the 21st.dev "image gallery" component.
  */
 export function ImageGallery({ images, onOpen, className, heightClassName = "h-[400px]" }: ImageGalleryProps) {
   // Touch screens have no hover: the first tap opens a strip, a second tap on the open strip calls onOpen.
@@ -31,8 +31,24 @@ export function ImageGallery({ images, onOpen, className, heightClassName = "h-[
   const [active, setActive] = useState<number | null>(null);
   const pointer = useRef<string>("mouse");
 
+  // An open strip is as wide as the row height times its photo's aspect ratio (read once each photo loads).
+  const row = useRef<HTMLDivElement>(null);
+  const [rowHeight, setRowHeight] = useState(0);
+  const [ratios, setRatios] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const el = row.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setRowHeight(el.clientHeight));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className={cn("flex w-full items-center gap-2", heightClassName, className)}>
+    <div
+      ref={row}
+      style={{ "--row-h": rowHeight ? `${rowHeight}px` : undefined } as CSSProperties}
+      className={cn("flex w-full items-center gap-2", heightClassName, className)}
+    >
       {images.map((image, idx) => {
         const open = active === idx;
         return (
@@ -45,49 +61,27 @@ export function ImageGallery({ images, onOpen, className, heightClassName = "h-[
               if (pointer.current !== "mouse" && !open) setActive(idx);
               else onOpen?.(idx);
             }}
+            style={{ "--ar": ratios[image.src] ?? 0.8 } as CSSProperties}
             className={cn(
-              "group relative h-full w-14 min-w-0 flex-grow sm:w-56 overflow-hidden rounded-lg text-left transition-all duration-500 ease-luxe hover:w-full focus-visible:w-full",
-              open && "w-full",
+              "group relative h-full w-14 min-w-0 max-w-full flex-grow overflow-hidden rounded-lg text-left transition-all duration-500 ease-luxe sm:w-56",
+              "hover:w-[calc(var(--row-h,400px)*var(--ar))] hover:shrink-0 hover:grow-0",
+              "focus-visible:w-[calc(var(--row-h,400px)*var(--ar))] focus-visible:shrink-0 focus-visible:grow-0",
+              open && "w-[calc(var(--row-h,400px)*var(--ar))] shrink-0 grow-0",
             )}
           >
-            {/* Closed: the photo crops to fill the strip */}
             <img
-              className={cn(
-                "h-full w-full object-cover object-center transition-opacity duration-500 ease-luxe group-hover:opacity-0 group-focus-visible:opacity-0",
-                open && "opacity-0",
-              )}
+              className="h-full w-full object-cover object-center"
               src={image.src}
               srcSet={image.srcSet}
               sizes="(min-width: 1024px) 50vw, 90vw"
               alt={image.alt}
               loading="lazy"
               decoding="async"
+              onLoad={(e) => {
+                const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+                if (w && h) setRatios((r) => (r[image.src] ? r : { ...r, [image.src]: w / h }));
+              }}
             />
-            {/* Open: the whole photo, uncropped, over a soft blurred copy of itself */}
-            <span
-              aria-hidden
-              className={cn(
-                "pointer-events-none absolute inset-0 bg-ink opacity-0 transition-opacity duration-500 ease-luxe group-hover:opacity-100 group-focus-visible:opacity-100",
-                open && "opacity-100",
-              )}
-            >
-              <img
-                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-2xl"
-                src={image.src}
-                alt=""
-                loading="lazy"
-                decoding="async"
-              />
-              <img
-                className="absolute inset-0 h-full w-full object-contain"
-                src={image.src}
-                srcSet={image.srcSet}
-                sizes="(min-width: 1024px) 50vw, 90vw"
-                alt=""
-                loading="lazy"
-                decoding="async"
-              />
-            </span>
             {(image.label || image.caption) && (
               <span
                 className={cn(
