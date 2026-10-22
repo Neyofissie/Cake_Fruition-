@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import { useMediaQuery } from "../lib/useMediaQuery";
 import { EASE } from "../components/Reveal";
 import { WhatsAppIcon } from "../components/Icons";
 import { GALLERY, OCCASIONS, withCutout } from "../lib/content";
@@ -27,17 +28,30 @@ const STEPS = ["Share your idea", "Get a quote", "Collect & enjoy"];
 /** Occasions and ordering on one screen: a large cake on a black block, a short write-up, and occasion cards. */
 export default function Celebrations() {
   const reduce = useReducedMotion();
+  const desktop = useMediaQuery("(min-width: 1024px)");
   const [active, setActive] = useState(0);
+
+  // On desktop the section stays pinned while scrolling steps through every occasion, then releases.
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (desktop) setActive(Math.min(ITEMS.length - 1, Math.floor(v * ITEMS.length)));
+  });
+  const choose = (i: number) => {
+    setActive(i);
+    const el = ref.current;
+    if (!desktop || !el) return;
+    const travel = el.offsetHeight - window.innerHeight;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + ((i + 0.5) / ITEMS.length) * travel, behavior: reduce ? "auto" : "smooth" });
+  };
   const item = ITEMS[active];
   const message = `Hi Cake Fruition! I'd love to order ${item.title.toLowerCase()}. My date is…`;
 
   return (
-    <section
-      id="order"
-      aria-labelledby="celebrations-title"
-      className="relative overflow-hidden bg-warm-white pb-20 pt-24 lg:flex lg:h-[100svh] lg:min-h-[40rem] lg:flex-col lg:pb-8 lg:pt-[6.5rem]"
-    >
+    <section id="order" ref={ref} aria-labelledby="celebrations-title" className="relative bg-warm-white lg:h-[420svh]">
       <span id="occasions" className="absolute -top-24" aria-hidden />
+      <div className="overflow-hidden pb-20 pt-24 lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:min-h-[40rem] lg:flex-col lg:pb-8 lg:pt-[6.5rem]">
       <div className="mx-auto flex w-full max-w-[90rem] flex-col px-5 sm:px-8 lg:min-h-0 lg:flex-1 lg:px-12">
         <div className="grid items-center gap-10 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] lg:gap-8">
           {/* Side labels: how ordering works */}
@@ -116,7 +130,7 @@ export default function Celebrations() {
                 role="tab"
                 type="button"
                 aria-selected={selected}
-                onClick={() => setActive(i)}
+                onClick={() => choose(i)}
                 className={`relative w-40 shrink-0 rounded-lg p-4 pt-12 text-left shadow-[0_20px_30px_-18px_rgba(11,11,11,0.55)] transition-all duration-300 lg:w-auto ${
                   selected ? "-translate-y-1.5 bg-ink" : "bg-charcoal hover:-translate-y-1"
                 }`}
@@ -135,6 +149,7 @@ export default function Celebrations() {
             <span key={o.title} className={`h-2 w-2 rounded-full ${i === active ? "bg-ink" : "bg-ink/20"}`} />
           ))}
         </div>
+      </div>
       </div>
     </section>
   );

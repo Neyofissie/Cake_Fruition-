@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import Reveal, { EASE, fadeUp, stagger } from "../components/Reveal";
 import { ArrowIcon, SparkleIcon } from "../components/Icons";
 import { GALLERY, PILLARS, withCutout } from "../lib/content";
@@ -35,22 +35,36 @@ export default function About() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const desktop = useMediaQuery("(min-width: 1024px)");
-  const drift = reduce ? 0 : desktop ? 1 : 0.3;
+  const drift = reduce ? 0 : desktop ? 0.5 : 0.3;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const cakeY = useTransform(scrollYProgress, (v) => (0.5 - v) * 140 * drift);
   const cakeRotate = useTransform(scrollYProgress, (v) => (v - 0.5) * 8 * drift);
   const wordX = useTransform(scrollYProgress, (v) => (reduce ? 0 : (0.5 - v) * 160));
 
-  const { index, setIndex, handlers } = useRotation(ABOUT_CAKES.length, 4500);
+  // Phones rotate on a timer; on desktop the section stays pinned while scrolling steps through each cake.
+  const { index, setIndex, handlers } = useRotation(ABOUT_CAKES.length, 4500, !desktop);
   const cake = ABOUT_CAKES[index];
+  const { scrollYProgress: pinned } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  useMotionValueEvent(pinned, "change", (v) => {
+    if (desktop) setIndex(Math.min(ABOUT_CAKES.length - 1, Math.floor(v * ABOUT_CAKES.length)));
+  });
+  const choose = (i: number) => {
+    setIndex(i);
+    const el = ref.current;
+    if (!desktop || !el) return;
+    const travel = el.offsetHeight - window.innerHeight;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + ((i + 0.5) / ABOUT_CAKES.length) * travel, behavior: reduce ? "auto" : "smooth" });
+  };
 
   return (
     <section
       id="about"
       ref={ref}
       aria-labelledby="about-title"
-      className="relative overflow-hidden border-t border-muted-border bg-[radial-gradient(ellipse_at_68%_45%,#ffffff_0%,#faf8f4_45%,#ece6dd_100%)]"
+      className="relative border-t border-muted-border bg-[radial-gradient(ellipse_at_68%_45%,#ffffff_0%,#faf8f4_45%,#ece6dd_100%)] lg:h-[280svh]"
     >
+      <div className="relative overflow-hidden lg:sticky lg:top-0 lg:h-[100svh]">
       {/* Oversized word drifting behind the cake */}
       <motion.p
         aria-hidden
@@ -60,7 +74,7 @@ export default function About() {
         Studio
       </motion.p>
 
-      <div className="relative mx-auto grid max-w-[90rem] items-center gap-10 px-5 pb-16 pt-24 sm:px-8 sm:pt-28 lg:min-h-[100svh] lg:grid-cols-12 lg:gap-6 lg:px-12 lg:pb-12">
+      <div className="relative mx-auto grid max-w-[90rem] items-center gap-10 px-5 pb-16 pt-24 sm:px-8 sm:pt-28 lg:h-full lg:grid-cols-12 lg:gap-6 lg:px-12 lg:pb-12">
         {/* Copy */}
         <motion.div
           variants={stagger(0.1)}
@@ -220,7 +234,7 @@ export default function About() {
                 <button
                   key={c.title}
                   type="button"
-                  onClick={() => setIndex(i)}
+                  onClick={() => choose(i)}
                   aria-label={`Show ${c.title}`}
                   aria-pressed={i === index}
                   className={`relative h-14 w-14 overflow-hidden rounded-xl border bg-off-white transition-all duration-300 sm:h-16 sm:w-16 ${
@@ -264,6 +278,7 @@ export default function About() {
             <span className="eyebrow text-[0.55rem] text-charcoal">Scroll down</span>
           </a>
         </div>
+      </div>
       </div>
     </section>
   );

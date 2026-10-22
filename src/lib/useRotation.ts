@@ -4,9 +4,9 @@ import { useReducedMotion } from "motion/react";
 /**
  * Auto-advancing index for a set of slides. A quick tap (or click) on the element that receives `handlers`
  * moves to the next slide; pressing and holding keeps the current one; a mouse hovering over it pauses.
- * Stays still for visitors who prefer reduced motion.
+ * Stays still for visitors who prefer reduced motion, and when `auto` is off (e.g. scroll drives it instead).
  */
-export function useRotation(count: number, delay = 3500) {
+export function useRotation(count: number, delay = 3500, auto = true) {
   const reduce = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
@@ -15,10 +15,10 @@ export function useRotation(count: number, delay = 3500) {
   const next = useCallback(() => setIndex((i) => (i + 1) % count), [count]);
 
   useEffect(() => {
-    if (reduce || hovered || held) return;
+    if (!auto || reduce || hovered || held) return;
     const id = window.setTimeout(next, delay);
     return () => window.clearTimeout(id);
-  }, [index, reduce, hovered, held, next, delay]);
+  }, [index, auto, reduce, hovered, held, next, delay]);
 
   const release = () => {
     press.current = null;
