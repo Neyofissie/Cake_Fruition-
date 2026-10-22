@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { ImageGallery } from "@/components/ui/image-gallery";
+import { CircularGallery, type CircularGalleryHandle } from "@/components/ui/circular-gallery-2";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { EASE } from "./Reveal";
 import { ChevronIcon, CloseIcon, WhatsAppIcon } from "./Icons";
@@ -12,15 +12,12 @@ const FILTERS: Array<"All" | GalleryCategory> = ["All", "Tiered", "Birthday", "C
 export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const visible = filter === "All" ? items : items.filter((item) => item.category === filter);
-  // Split into balanced rows of expanding strips: up to six per row on desktop, four on smaller screens.
-  const perRow = useMediaQuery("(min-width: 1024px)") ? 6 : 4;
-  const rowCount = Math.max(1, Math.ceil(visible.length / perRow));
-  const size = Math.ceil(visible.length / rowCount);
-  const rows = Array.from({ length: rowCount }, (_, r) => ({
-    start: r * size,
-    items: visible.slice(r * size, (r + 1) * size),
-  })).filter((row) => row.items.length > 0);
+  const visible = useMemo(() => (filter === "All" ? items : items.filter((item) => item.category === filter)), [items, filter]);
+  // Stable per filter, so the WebGL scene is only rebuilt when the filter changes.
+  const slides = useMemo(() => visible.map((item) => ({ image: item.image.large, text: item.title })), [visible]);
+  const gallery = useRef<CircularGalleryHandle>(null);
+  // A gentler curve on narrow screens, where the side cakes would otherwise tip over.
+  const wide = useMediaQuery("(min-width: 640px)");
 
   return (
     <>
@@ -52,22 +49,47 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, transition: { duration: 0.15 } }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="mt-10 flex flex-col gap-2"
+          className="mt-10"
         >
-          {rows.map((row) => (
-            <ImageGallery
-              key={row.start}
-              images={row.items.map((item) => ({
-                src: item.image.large,
-                srcSet: item.image.srcSet,
-                alt: item.alt,
-                label: item.category,
-                caption: item.title,
-              }))}
-              onOpen={(i) => setOpenIndex(row.start + i)}
-              heightClassName="h-[300px] sm:h-[360px] lg:h-[420px]"
+          {/* Cakes on a curved, endlessly looping track: drag, swipe or scroll over it; click a cake to open it */}
+          <div className="relative -mx-5 h-[460px] sm:-mx-8 sm:h-[560px] lg:-mx-12 lg:h-[640px]">
+            <CircularGallery
+              ref={gallery}
+              items={slides}
+              bend={wide ? 3 : 1.2}
+              borderRadius={0.05}
+              scrollEase={0.04}
+              onItemClick={setOpenIndex}
+              aria-hidden
+              className="font-serif text-[34px] font-medium text-ink"
             />
-          ))}
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-6">
+            <p className="eyebrow text-[0.6rem] text-stone">Drag to explore · Tap a cake to view it</p>
+            <div className="flex gap-3">
+              {([-1, 1] as const).map((dir) => (
+                <button
+                  key={dir}
+                  type="button"
+                  onClick={() => gallery.current?.step(dir)}
+                  aria-label={dir < 0 ? "Previous cakes" : "Next cakes"}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-ink/20 text-ink transition-colors hover:bg-ink hover:text-off-white"
+                >
+                  <ChevronIcon size={18} className={dir < 0 ? "rotate-180" : ""} />
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* The gallery is drawn in WebGL, so screen readers and keyboards get the cakes as a list of buttons */}
+          <ul className="sr-only">
+            {visible.map((item, i) => (
+              <li key={item.title}>
+                <button type="button" onClick={() => setOpenIndex(i)}>
+                  View {item.title}
+                </button>
+              </li>
+            ))}
+          </ul>
         </motion.div>
       </AnimatePresence>
 

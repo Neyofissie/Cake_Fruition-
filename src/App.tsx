@@ -7,10 +7,15 @@ import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
 import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
-import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
+import Reviews from "./sections/Reviews";
+import FAQ from "./sections/FAQ";
+import { REVIEWS } from "./lib/content";
+
+// The reviews section appears once at least one real (non-sample) review is in REVIEWS.
+const SHOW_REVIEWS = REVIEWS.some((r) => !r.sample);
 
 export default function App() {
   return (
@@ -26,10 +31,11 @@ export default function App() {
         <Hero />
         <SpotlightSection />
         <Gallery />
+        {SHOW_REVIEWS && <Reviews />}
         <About />
         <MeetTheArchitect />
         <Menu />
-        <Celebrations />
+        <FAQ />
         <QuoteCTA />
         <Social />
       </main>
