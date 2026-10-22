@@ -1,15 +1,14 @@
 import { MotionConfig } from "motion/react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
+import SpotlightSection from "./components/Spotlight";
 import Footer from "./components/Footer";
 import MobileOrderBar from "./components/MobileOrderBar";
 import About from "./sections/About";
 import MeetTheArchitect from "./sections/MeetTheArchitect";
 import Menu from "./sections/Menu";
-import Occasions from "./sections/Occasions";
+import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
-import OrderProcess from "./sections/OrderProcess";
-import WhyChoose from "./sections/WhyChoose";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
 
@@ -25,13 +24,12 @@ export default function App() {
       <Header />
       <main id="main">
         <Hero />
+        <SpotlightSection />
         <Gallery />
         <About />
         <MeetTheArchitect />
         <Menu />
-        <Occasions />
-        <OrderProcess />
-        <WhyChoose />
+        <Celebrations />
         <QuoteCTA />
         <Social />
       </main>

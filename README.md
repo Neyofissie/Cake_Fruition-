@@ -44,15 +44,22 @@ src/
   lib/site.ts          brand name, WhatsApp number, social links, nav
   lib/content.ts       menu, occasions, gallery, order steps, features
   lib/images.ts        responsive image helper
-  components/          Header, Hero, CTAButton, SectionLabel, CakeMenuCard,
-                       FlavourList, ServiceCard, GalleryGrid (with lightbox),
-                       ProcessStep, FeatureCard, SocialLinkButton, Footer,
+  components/ui/       shadcn-style primitives (image-gallery: expanding strips)
+  components/          Header, Hero, Spotlight, CTAButton, SectionLabel,
+                       GalleryGrid (with lightbox),
+                       SocialLinkButton, Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
-  sections/            About, Menu, Occasions, Gallery, OrderProcess,
-                       WhyChoose, QuoteCTA, Social
+  sections/            About, Menu, Celebrations (occasions + ordering), Gallery,
+                       MeetTheArchitect (with why choose us), QuoteCTA, Social
   assets/cakes/        cake photos as WebP, 640px and 1200px wide
 public/                favicon, Open Graph image, robots.txt
 ```
+
+## shadcn components
+
+The project follows the shadcn layout (`components.json`): the `@/` alias points to `src/`, shared UI
+primitives live in `src/components/ui/`, and `cn()` is in `src/lib/utils.ts`. Components from the
+shadcn CLI or 21st.dev can be added with `npx shadcn@latest add <component>` and land in the same folder.
 
 ## Editing content
 

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { ImageGallery } from "@/components/ui/image-gallery";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import { EASE } from "./Reveal";
 import { ChevronIcon, CloseIcon, WhatsAppIcon } from "./Icons";
 import type { GalleryCategory, GalleryItem } from "../lib/content";
@@ -11,8 +13,14 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const visible = filter === "All" ? items : items.filter((item) => item.category === filter);
-  // Large tiles only in the full view, where the counts are planned to fill whole rows.
-  const isLarge = (item: GalleryItem) => filter === "All" && item.featured;
+  // Split into balanced rows of expanding strips: up to six per row on desktop, four on smaller screens.
+  const perRow = useMediaQuery("(min-width: 1024px)") ? 6 : 4;
+  const rowCount = Math.max(1, Math.ceil(visible.length / perRow));
+  const size = Math.ceil(visible.length / rowCount);
+  const rows = Array.from({ length: rowCount }, (_, r) => ({
+    start: r * size,
+    items: visible.slice(r * size, (r + 1) * size),
+  })).filter((row) => row.items.length > 0);
 
   return (
     <>
@@ -37,44 +45,31 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
         </LayoutGroup>
       </div>
 
-      <ul className="mt-10 grid grid-flow-dense grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-        <AnimatePresence initial={false}>
-          {visible.map((item, i) => (
-            <motion.li
-              key={item.title}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, transition: { duration: 0.15 } }}
-              transition={{ duration: 0.6, ease: EASE, delay: (i % 4) * 0.05 }}
-              className={isLarge(item) ? "col-span-2 row-span-2 aspect-[4/5]" : undefined}
-            >
-              <button
-                type="button"
-                onClick={() => setOpenIndex(i)}
-                aria-label={`View larger: ${item.title}`}
-                className="group relative block h-full w-full overflow-hidden rounded-[2px] bg-light-grey text-left"
-              >
-                <img
-                  src={item.image.src}
-                  srcSet={item.image.srcSet}
-                  sizes={isLarge(item) ? "(min-width: 1024px) 46vw, 96vw" : "(min-width: 1024px) 23vw, 48vw"}
-                  alt={item.alt}
-                  loading="lazy"
-                  decoding="async"
-                  width={640}
-                  height={800}
-                  className={`${isLarge(item) ? "absolute inset-0 h-full" : "aspect-[4/5]"} w-full object-cover object-[50%_40%] transition-transform duration-[1.2s] ease-luxe group-hover:scale-[1.06]`}
-                />
-                <span className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/0 to-transparent opacity-80 transition-opacity duration-500 sm:opacity-0 sm:group-hover:opacity-100" />
-                <span className="absolute inset-x-0 bottom-0 p-3 text-off-white sm:translate-y-2 sm:p-5 sm:opacity-0 sm:transition-all sm:duration-500 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
-                  <span className="eyebrow block text-[0.58rem] text-off-white/70">{item.category}</span>
-                  <span className="mt-1 block font-serif text-lg leading-tight sm:text-2xl">{item.title}</span>
-                </span>
-              </button>
-            </motion.li>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={filter}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, transition: { duration: 0.15 } }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className="mt-10 flex flex-col gap-2"
+        >
+          {rows.map((row) => (
+            <ImageGallery
+              key={row.start}
+              images={row.items.map((item) => ({
+                src: item.image.large,
+                srcSet: item.image.srcSet,
+                alt: item.alt,
+                label: item.category,
+                caption: item.title,
+              }))}
+              onOpen={(i) => setOpenIndex(row.start + i)}
+              heightClassName="h-[300px] sm:h-[360px] lg:h-[420px]"
+            />
           ))}
-        </AnimatePresence>
-      </ul>
+        </motion.div>
+      </AnimatePresence>
 
       <AnimatePresence>
         {openIndex !== null && (
