@@ -10,7 +10,10 @@ export default function MobileOrderBar() {
   useEffect(() => {
     const onScroll = () => {
       const nearBottom = window.innerHeight + window.scrollY > document.body.scrollHeight - 160;
-      setShow(window.scrollY > window.innerHeight * 0.8 && !nearBottom);
+      // Wait until the hero (and its own WhatsApp button) has mostly scrolled away.
+      const hero = document.getElementById("home");
+      const pastHero = hero ? hero.getBoundingClientRect().bottom < window.innerHeight * 0.5 : window.scrollY > window.innerHeight * 0.8;
+      setShow(pastHero && !nearBottom);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
