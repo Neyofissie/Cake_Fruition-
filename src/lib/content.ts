@@ -244,3 +244,91 @@ export const FEATURES = [
   "Beautiful cakes designed to impress and made to be enjoyed",
 ];
 
+
+/**
+ * Customer reviews. These are SAMPLES to show the layout: replace each quote, name and occasion with a real
+ * customer's review (with their permission) and set `sample: false`. Cards marked as samples say so on the page.
+ */
+export const REVIEWS = [
+  {
+    quote: "The cake was the centrepiece of the whole party. Everyone asked who made it, and it tasted even better than it looked.",
+    name: "Customer name",
+    occasion: "50th birthday",
+    cake: byTitle("Blush Cascade Fiftieth"),
+    sample: true,
+  },
+  {
+    quote: "From the first message to collection day everything was easy. The flowers looked so real our guests had to touch them.",
+    name: "Customer name",
+    occasion: "Celebration",
+    cake: byTitle("Rose Relief Three-Tier"),
+    sample: true,
+  },
+  {
+    quote: "Exactly the design we sent, only better. Moist sponge, lovely cream and not too sweet.",
+    name: "Customer name",
+    occasion: "14th birthday",
+    cake: byTitle("Monochrome Fourteen"),
+    sample: true,
+  },
+  {
+    quote: "Our marbled flavour was a hit. We'll be ordering again for the next family celebration.",
+    name: "Customer name",
+    occasion: "18th birthday",
+    cake: byTitle("Happy Eighteenth Bloom"),
+    sample: true,
+  },
+  {
+    quote: "Beautifully finished, well packed and right on time. Thank you for making the day so special.",
+    name: "Customer name",
+    occasion: "40th birthday",
+    cake: byTitle("Jessica Fortieth"),
+    sample: true,
+  },
+  {
+    quote: "The gold detail was stunning. It photographed perfectly and every slice was gone by the end of the night.",
+    name: "Customer name",
+    occasion: "50th birthday",
+    cake: byTitle("Noir & Gold Fiftieth"),
+    sample: true,
+  },
+];
+
+/** Questions people ask before ordering. Firm up the answers with exact lead times, areas and prices when known. */
+export const FAQS = [
+  {
+    question: "How far in advance should I order?",
+    answer:
+      "As early as you can. Every cake is made to order and popular dates fill quickly, so send us your date on WhatsApp and we'll confirm whether it's available.",
+  },
+  {
+    question: "How do I get a price for my cake?",
+    answer:
+      "Message us on WhatsApp with your occasion, date, number of guests, flavour and any design inspiration. We'll reply with a quote based on the size and detail of your design.",
+  },
+  {
+    question: "Do you deliver, or do I collect?",
+    answer:
+      "Let us know your location and date when you enquire and we'll talk you through the collection and delivery options for your order.",
+  },
+  {
+    question: "Can you work from a picture or theme I already have?",
+    answer:
+      "Yes. Send photos, colours or a theme and we'll design a cake around them, adapting the idea to your size, flavours and budget.",
+  },
+  {
+    question: "Which flavours can I choose?",
+    answer:
+      "Choose from our popular and special flavours, or marble two together. Each is filled with cream and finished in buttercream, chocolate ganache or fondant.",
+  },
+  {
+    question: "Can you cater for allergies or dietary needs?",
+    answer:
+      "Please tell us about any allergies or dietary needs before you order. We'll explain what we can offer and how the cake is made so you can decide with confidence.",
+  },
+  {
+    question: "How many people will my cake serve?",
+    answer:
+      "Tell us your guest count and we'll recommend the right size and number of tiers, whether you want generous party slices or smaller wedding portions.",
+  },
+];

@@ -11,6 +11,8 @@ import Celebrations from "./sections/Celebrations";
 import Gallery from "./sections/Gallery";
 import QuoteCTA from "./sections/QuoteCTA";
 import Social from "./sections/Social";
+import Reviews from "./sections/Reviews";
+import FAQ from "./sections/FAQ";
 
 export default function App() {
   return (
@@ -26,10 +28,12 @@ export default function App() {
         <Hero />
         <SpotlightSection />
         <Gallery />
+        <Reviews />
         <About />
         <MeetTheArchitect />
         <Menu />
         <Celebrations />
+        <FAQ />
         <QuoteCTA />
         <Social />
       </main>
