@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Reveal, { EASE } from "../components/Reveal";
-import { ArrowIcon, ChevronIcon, WhatsAppIcon } from "../components/Icons";
+import { ChevronIcon, WhatsAppIcon } from "../components/Icons";
 import { FINISHES, GALLERY, POPULAR_FLAVOURS, SPECIAL_FLAVOURS, withCutout, type Flavour } from "../lib/content";
 import { whatsappLink } from "../lib/site";
 
@@ -218,13 +218,6 @@ export default function Menu() {
               </motion.div>
             ))}
           </div>
-
-          <Reveal className="mt-14 flex justify-center">
-            <a href="#order" className="eyebrow group inline-flex items-center gap-3 text-ink">
-              How ordering works
-              <ArrowIcon size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
-          </Reveal>
         </div>
       </div>
     </section>

@@ -21,9 +21,6 @@ const ITEMS = OCCASIONS.map((o) => ({
   short: o.title.replace(/ Cakes$/, ""),
 }));
 
-// How ordering works, as short side labels.
-const STEPS = ["Share your idea", "Get a quote", "Collect & enjoy"];
-
 /** Occasions and ordering on one screen: a large cake on a black block, a short write-up, and occasion cards. */
 export default function Celebrations() {
   const reduce = useReducedMotion();
@@ -40,17 +37,8 @@ export default function Celebrations() {
       <span id="occasions" className="absolute -top-24" aria-hidden />
       <div className="mx-auto flex w-full max-w-[90rem] flex-col px-5 sm:px-8 lg:min-h-0 lg:flex-1 lg:px-12">
         <div className="grid items-center gap-10 lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)] lg:gap-8">
-          {/* Side labels: how ordering works */}
-          <ol aria-label="How to order" className="hidden h-full flex-col justify-center gap-12 lg:col-span-1 lg:flex">
-            {STEPS.map((step) => (
-              <li key={step} className="rotate-180 whitespace-nowrap text-[0.85rem] text-charcoal [writing-mode:vertical-rl]">
-                {step}
-              </li>
-            ))}
-          </ol>
-
           {/* Black block with the cake overlapping its edge */}
-          <div className="relative mx-auto h-[110vw] max-h-[34rem] w-full max-w-md lg:col-span-5 lg:mx-0 lg:h-full lg:max-h-none lg:max-w-none">
+          <div className="relative mx-auto h-[110vw] max-h-[34rem] w-full max-w-md lg:col-span-6 lg:mx-0 lg:h-full lg:max-h-none lg:max-w-none">
             <div className="absolute inset-y-0 left-[12%] right-[22%] bg-ink lg:left-[6%] lg:right-[30%]">
               <p className="absolute inset-x-0 top-6 text-center font-serif text-[1.8rem] text-off-white">Cake Fruition</p>
             </div>

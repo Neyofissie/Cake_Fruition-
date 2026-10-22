@@ -215,25 +215,6 @@ export const withCutout = (item: GalleryItem) => ({ ...item, cutout: cake(`${CUT
 /** Cakes the signature spotlight scrolls through, starting with the hero's finished cake for continuity. */
 export const SPOTLIGHT_CAKES = [HERO_FRAMES.end, ...HERO_SLIDES.filter((c) => c !== HERO_FRAMES.end)].map(withCutout);
 
-export const ORDER_STEPS = [
-  {
-    title: "Share Your Idea",
-    description: "Send your cake inspiration, occasion date, flavour choice, and serving size.",
-  },
-  {
-    title: "Receive a Quote",
-    description: "Prices vary depending on size, design, filling, and decoration preferences.",
-  },
-  {
-    title: "Confirm Your Order",
-    description: "Once confirmed, your cake is freshly baked and designed for your celebration.",
-  },
-  {
-    title: "Collect & Celebrate",
-    description: "Enjoy a beautiful custom cake created specially for your moment.",
-  },
-];
-
 export const FEATURES = [
   "Freshly baked cakes made to order",
   "Soft, moist sponge with delicious cream fillings",
