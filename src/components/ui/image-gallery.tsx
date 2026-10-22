@@ -57,13 +57,18 @@ export function ImageGallery({ images, onOpen, className, heightClassName = "h-[
             type="button"
             aria-label={image.caption ? `View ${image.caption}` : `View image ${idx + 1}`}
             onPointerDown={(e) => (pointer.current = e.pointerType)}
-            onClick={() => {
-              if (pointer.current !== "mouse" && !open) setActive(idx);
+            onClick={(e) => {
+              if (pointer.current !== "mouse" && !open) {
+                setActive(idx);
+                // Keep the opened strip in view when the row scrolls sideways.
+                const strip = e.currentTarget;
+                window.setTimeout(() => strip.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }), 520);
+              }
               else onOpen?.(idx);
             }}
             style={{ "--ar": ratios[image.src] ?? 0.8 } as CSSProperties}
             className={cn(
-              "group relative h-full w-14 min-w-0 max-w-full flex-grow overflow-hidden rounded-lg text-left transition-all duration-500 ease-luxe sm:w-56",
+              "group relative h-full w-14 min-w-12 max-w-full flex-grow overflow-hidden rounded-lg text-left transition-all duration-500 ease-luxe sm:w-56",
               "hover:w-[calc(var(--row-h,400px)*var(--ar))] hover:shrink-0 hover:grow-0",
               "focus-visible:w-[calc(var(--row-h,400px)*var(--ar))] focus-visible:shrink-0 focus-visible:grow-0",
               open && "w-[calc(var(--row-h,400px)*var(--ar))] shrink-0 grow-0",

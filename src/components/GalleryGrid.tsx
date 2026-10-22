@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { ImageGallery } from "@/components/ui/image-gallery";
-import { useMediaQuery } from "@/lib/useMediaQuery";
 import { EASE } from "./Reveal";
 import { ChevronIcon, CloseIcon, WhatsAppIcon } from "./Icons";
 import type { GalleryCategory, GalleryItem } from "../lib/content";
@@ -13,14 +12,6 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const visible = filter === "All" ? items : items.filter((item) => item.category === filter);
-  // Split into balanced rows of expanding strips: up to six per row on desktop, four on smaller screens.
-  const perRow = useMediaQuery("(min-width: 1024px)") ? 6 : 4;
-  const rowCount = Math.max(1, Math.ceil(visible.length / perRow));
-  const size = Math.ceil(visible.length / rowCount);
-  const rows = Array.from({ length: rowCount }, (_, r) => ({
-    start: r * size,
-    items: visible.slice(r * size, (r + 1) * size),
-  })).filter((row) => row.items.length > 0);
 
   return (
     <>
@@ -52,22 +43,21 @@ export default function GalleryGrid({ items }: { items: GalleryItem[] }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, transition: { duration: 0.15 } }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="mt-10 flex flex-col gap-2"
+          className="mt-10"
         >
-          {rows.map((row) => (
-            <ImageGallery
-              key={row.start}
-              images={row.items.map((item) => ({
-                src: item.image.large,
-                srcSet: item.image.srcSet,
-                alt: item.alt,
-                label: item.category,
-                caption: item.title,
-              }))}
-              onOpen={(i) => setOpenIndex(row.start + i)}
-              heightClassName="h-[300px] sm:h-[360px] lg:h-[420px]"
-            />
-          ))}
+          {/* Every cake on one line of strips; on narrow screens the line scrolls sideways */}
+          <ImageGallery
+            images={visible.map((item) => ({
+              src: item.image.large,
+              srcSet: item.image.srcSet,
+              alt: item.alt,
+              label: item.category,
+              caption: item.title,
+            }))}
+            onOpen={setOpenIndex}
+            className="no-scrollbar -mx-5 overflow-x-auto px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0"
+            heightClassName="h-[360px] sm:h-[420px] lg:h-[480px]"
+          />
         </motion.div>
       </AnimatePresence>
 
