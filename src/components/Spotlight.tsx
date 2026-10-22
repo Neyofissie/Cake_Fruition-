@@ -1,8 +1,16 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { EASE } from "./Reveal";
 import { ArrowIcon } from "./Icons";
 import { SPOTLIGHT_CAKES, type GalleryItem } from "../lib/content";
-import { useRotation } from "../lib/useRotation";
 import { whatsappLink } from "../lib/site";
 
 export const SPOTLIGHT_WORD = "Layers";
@@ -163,41 +171,73 @@ export function SpotlightDetails({ layout, titleId }: { layout: "overlay" | "sta
   );
 }
 
-/** Phones and tablets: the spotlight as its own section right after the hero, rotating the featured cakes. */
-export default function SpotlightSection() {
-  const { index, setIndex, handlers } = useRotation(SPOTLIGHT_CAKES.length);
+/** One cut-out cake on the phone stage; glides sideways, shrinks and fades with the scroll position. */
+function StageCake({ index, position, active }: { index: number; position: MotionValue<number>; active: boolean }) {
+  const reduce = useReducedMotion();
   const cake = SPOTLIGHT_CAKES[index];
+  const x = useTransform(position, (v) => (reduce ? "0vw" : `${(index - v) * 70}vw`));
+  const opacity = useTransform(position, (v) => Math.max(0, 1 - Math.abs(index - v) * 1.2));
+  const scale = useTransform(position, (v) => 1 - 0.12 * Math.min(1, Math.abs(index - v)));
+  return (
+    <motion.img
+      src={cake.cutout.large}
+      alt={active ? cake.alt : ""}
+      aria-hidden={!active}
+      decoding="async"
+      draggable={false}
+      style={{ x, opacity, scale }}
+      className="absolute inset-0 h-full w-full origin-bottom object-contain object-bottom drop-shadow-[0_24px_24px_rgba(34,30,26,0.18)]"
+    />
+  );
+}
+
+/** Screens of scroll each cake holds the pinned phone stage for. */
+const STEP = 0.6;
+
+/**
+ * Phones and tablets: the spotlight as its own section right after the hero. The stage pins to the
+ * screen and each stretch of scroll glides in the next featured cake; the page only moves on once
+ * every cake has been shown.
+ */
+export default function SpotlightSection() {
+  const track = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  const last = SPOTLIGHT_CAKES.length - 1;
+  // A short rest at each end so the first and last cakes sit still for a moment.
+  const position = useTransform(scrollYProgress, (v) => last * Math.min(1, Math.max(0, (v - 0.06) / 0.88)));
+  const [index, setIndex] = useState(0);
+  useMotionValueEvent(position, "change", (v) => setIndex(Math.round(v)));
+
+  // Picking a bar scrolls to that cake's point on the track.
+  const select = (i: number) => {
+    const el = track.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const range = el.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: top + range * (0.06 + (0.88 * i) / last), behavior: "smooth" });
+  };
+
   return (
     <section aria-labelledby="spotlight-title-mobile" className="bg-off-white px-3 pb-6 sm:px-6 lg:hidden">
+      <div ref={track} style={{ height: `${100 + last * STEP * 100}svh` }} className="relative">
+        <div className="sticky top-0 flex h-[100svh] flex-col pb-[5.75rem] pt-[5.25rem] sm:pt-[5.75rem]">
+          <div className="relative flex flex-1 flex-col items-center overflow-hidden rounded-[2rem] px-5 pb-6 pt-8 text-center">
+            <SpotlightBackdrop className="absolute inset-0" />
+            <SpotlightWord className="relative text-[23vw] sm:text-[19vw]" />
+            <div className="relative -mt-[10vw] min-h-0 w-full flex-1">
+              <div aria-hidden className="absolute -bottom-1 left-1/2 h-6 w-[60%] -translate-x-1/2 rounded-[50%] bg-ink/20 blur-xl" />
+              {SPOTLIGHT_CAKES.map((c, i) => (
+                <StageCake key={c.title} index={i} position={position} active={i === index} />
+              ))}
+            </div>
+            <FeaturedReadout index={index} onSelect={select} className="relative mt-5 flex flex-col items-center" />
+          </div>
+        </div>
+      </div>
       <div className="relative overflow-hidden rounded-[2rem]">
         <SpotlightBackdrop className="absolute inset-0" />
-        <div className="relative flex flex-col items-center px-5 pb-8 pt-12 text-center">
-          <SpotlightWord className="text-[23vw] sm:text-[19vw]" />
-          <div
-            className="relative -mt-[12vw] h-[100vw] max-h-[34rem] w-full cursor-pointer select-none [-webkit-touch-callout:none]"
-            {...handlers}
-          >
-            <div aria-hidden className="absolute -bottom-1 left-1/2 h-6 w-[60%] -translate-x-1/2 rounded-[50%] bg-ink/20 blur-xl" />
-            <AnimatePresence initial={false}>
-              <motion.img
-                key={cake.title}
-                draggable={false}
-                src={cake.cutout.large}
-                alt={cake.alt}
-                loading="lazy"
-                decoding="async"
-                initial={{ opacity: 0, x: 60, scale: 0.92 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -60, scale: 0.92 }}
-                transition={{ duration: 0.8, ease: EASE }}
-                className="absolute inset-0 h-full w-full origin-bottom object-contain object-bottom drop-shadow-[0_24px_24px_rgba(34,30,26,0.18)]"
-              />
-            </AnimatePresence>
-          </div>
-          <FeaturedReadout index={index} onSelect={setIndex} className="mt-8 flex flex-col items-center" />
-          <div className="relative mt-8 flex flex-col items-center gap-6">
-            <SpotlightDetails layout="stacked" titleId="spotlight-title-mobile" />
-          </div>
+        <div className="relative flex flex-col items-center gap-6 px-5 py-10 text-center">
+          <SpotlightDetails layout="stacked" titleId="spotlight-title-mobile" />
         </div>
       </div>
     </section>

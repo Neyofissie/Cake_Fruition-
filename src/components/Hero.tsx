@@ -177,21 +177,25 @@ export default function Hero() {
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const p = scrollYProgress;
-  // Desktop timings are in screens of scroll; on phones only scene 1 plays, over the hero's own height.
+  // Phones: scene 1 plays while the photo is still on screen, finishing before it has scrolled half away.
+  const frameRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: frameProgress } = useScroll({ target: frameRef, offset: ["start start", "end start"] });
+  // Desktop timings are in screens of scroll; on phones only scene 1 plays, over the photo's own height.
   const at = (a: number, b: number) => (v: number) => (desktop ? ramp(v * SCREENS, a, b) : 0);
-  const scene1 = (v: number) => (desktop ? ramp(v * SCREENS, 0.16, 0.72) : ramp(v, 0.25, 0.7));
-  const scene1End = (v: number) => (desktop ? ramp(v * SCREENS, 0.24, 0.8) : ramp(v, 0.3, 0.75));
+  const scene1Of = (v: number, f: number) => (desktop ? ramp(v * SCREENS, 0.16, 0.72) : ramp(f, 0, 0.4));
+  const scene1EndOf = (v: number, f: number) => (desktop ? ramp(v * SCREENS, 0.24, 0.8) : ramp(f, 0.04, 0.45));
+  const both = [p, frameProgress];
   // The finished-cake photo hands over to its background-free cut-out, which the carousel then moves.
   const toCutout = at(1.6, 1.8);
 
-  const startOpacity = useTransform(p, (v) => 1 - scene1(v));
-  const startScale = useTransform(p, (v) => 1 - 0.06 * scene1(v));
-  const endOpacity = useTransform(p, (v) => scene1End(v) * (1 - toCutout(v)));
-  const endScale = useTransform(p, (v) => 1.08 - 0.08 * scene1End(v));
+  const startOpacity = useTransform(both, ([v, f]: number[]) => 1 - scene1Of(v, f));
+  const startScale = useTransform(both, ([v, f]: number[]) => 1 - 0.06 * scene1Of(v, f));
+  const endOpacity = useTransform(both, ([v, f]: number[]) => scene1EndOf(v, f) * (1 - toCutout(v)));
+  const endScale = useTransform(both, ([v, f]: number[]) => 1.08 - 0.08 * scene1EndOf(v, f));
 
   const copyOpacity = useTransform(p, (v) => 1 - at(0.84, 1.12)(v));
   const copyEvents = useTransform(p, (v) => (at(0.84, 1.12)(v) > 0.5 ? "none" : "auto"));
-  const contentY = useTransform(p, (v) => (reduce ? 0 : -36 * scene1(v)) - 70 * at(0.84, 1.16)(v));
+  const contentY = useTransform(both, ([v, f]: number[]) => (reduce ? 0 : -36 * scene1Of(v, f)) - 70 * at(0.84, 1.16)(v));
   const chromeOpacity = useTransform(p, (v) => 1 - at(0.84, 1.04)(v));
   const framesX = useTransform(p, (v) => -shift * at(0.9, 1.6)(v));
   const framesScale = useTransform(p, (v) => 1 - 0.1 * at(0.9, 1.6)(v));
@@ -207,7 +211,7 @@ export default function Hero() {
   const detailsY = useTransform(p, (v) => 24 * (1 - at(1.36, 1.76)(v)));
   const detailsEvents = useTransform(p, (v) => (at(1.36, 1.76)(v) > 0.5 ? "auto" : "none"));
   const carouselOpacity = useTransform(p, (v) => toCutout(v));
-  const stage = useTransform(p, (v) => (desktop ? ramp(v * SCREENS, 0.16, 0.8) + at(0.84, 1.76)(v) : scene1(v)));
+  const stage = useTransform(both, ([v, f]: number[]) => (desktop ? ramp(v * SCREENS, 0.16, 0.8) + at(0.84, 1.76)(v) : scene1Of(v, f)));
 
   // Carousel position: 0 → (cakes - 1) across the last stretch of the pinned scroll.
   const position = useTransform(p, (v) => (SPOTLIGHT_CAKES.length - 1) * at(1.95, 4.75)(v));
@@ -314,6 +318,7 @@ export default function Hero() {
         <div ref={innerRef} className="relative mx-auto flex max-w-[90rem] flex-col px-5 pt-[5.5rem] sm:px-8 lg:h-full lg:flex-row lg:items-center lg:px-12 lg:pt-16">
           {/* Start and finish frames */}
           <div
+            ref={frameRef}
             className={
               fullBleed
                 ? "relative -mx-5 h-[58svh] sm:-mx-8 lg:absolute lg:inset-0 lg:mx-0 lg:h-auto"
