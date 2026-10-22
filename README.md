@@ -47,7 +47,7 @@ src/
   components/ui/       shadcn-style primitives (image-gallery: expanding strips)
   components/          Header, Hero, Spotlight, CTAButton, SectionLabel,
                        GalleryGrid (with lightbox),
-                       SocialLinkButton, Footer,
+                       Footer,
                        MobileOrderBar, Motifs, Icons, Logo, Reveal
   sections/            About, Menu, Gallery, Reviews, FAQ,
                        MeetTheArchitect (with why choose us), QuoteCTA, Social
